@@ -1,0 +1,3197 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Hesap Makinesi | X-Calculator</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23101012'/%3E%3Ctext x='32' y='45' font-family='monospace' font-weight='bold' font-size='36' fill='%23F2F2F0' text-anchor='middle'%3EX%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #101012;
+    --panel: #1C1C1E;
+    --panel2: #2C2C2E;
+    --text: #FFFFFF;
+    --muted: #E0E0E0;
+    --muted2: #FFFFFF;
+    --hover: #FFFFFF;
+    --drawer-bg: #17181A;
+    --accent-color: #38BDF8;
+  }
+
+  [data-theme="light"] {
+    --bg: #F2F2F0;
+    --panel: #E6E6E8;
+    --panel2: #D6D6D9;
+    --text: #101012;
+    --muted: #6B6B70;
+    --muted2: #55555A;
+    --hover: #2C2C2E;
+    --drawer-bg: #EAEAEC;
+  }
+  [data-theme="cyberpunk"] {
+    --bg: #0F051D;
+    --panel: #1F0938;
+    --panel2: #380E66;
+    --text: #00FFCC;
+    --muted: #FF007F;
+    --muted2: #00FFCC;
+    --hover: #FF007F;
+    --drawer-bg: #150727;
+    --accent-color: #FF007F;
+  }
+  [data-theme="oled"] {
+    --bg: #000000;
+    --panel: #111111;
+    --panel2: #222222;
+    --text: #FFFFFF;
+    --muted: #888888;
+    --muted2: #FFFFFF;
+    --hover: #FFFFFF;
+    --drawer-bg: #0A0A0A;
+    --accent-color: #FFFFFF;
+  }
+  body.back-to-school {
+    --bg: #1B3A2F;
+    --panel: #234A3B;
+    --panel2: #2E5C49;
+    --text: #FDF6E3;
+    --muted: #F4C542;
+    --muted2: #FDF6E3;
+    --hover: #F4C542;
+    --drawer-bg: #16332A;
+    --accent-color: #F4C542;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { touch-action: manipulation; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    overscroll-behavior: none;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .initial-page-loader {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+  }
+  .initial-page-loader.fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .loading-text {
+    color: var(--text);
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    min-width: 100px;
+    text-align: center;
+  }
+
+  .kvkk-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(5px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .kvkk-modal-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .kvkk-modal-card {
+    background: var(--drawer-bg);
+    border: 1px solid var(--panel2);
+    border-radius: 16px;
+    max-width: 580px;
+    width: 100%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+  .kvkk-modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--panel2);
+    color: var(--text);
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .kvkk-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    color: var(--text);
+    font-size: 11px;
+    line-height: 1.7;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .kvkk-modal-body h4 {
+    color: var(--text);
+    margin: 8px 0 4px 0;
+    font-size: 12px;
+  }
+  .kvkk-notice-box {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed var(--panel2);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: #F87171;
+    font-weight: bold;
+    margin-top: 6px;
+  }
+  .kvkk-modal-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--panel2);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+  .kvkk-btn {
+    height: 40px;
+    padding: 0 20px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.2s;
+  }
+  .kvkk-btn-accept {
+    background: var(--text);
+    color: var(--bg);
+  }
+  .kvkk-btn-reject {
+    background: var(--panel2);
+    color: #F87171;
+  }
+
+  .calc {
+    width: 100%;
+    max-width: 320px;
+    padding: 24px 20px;
+    position: relative;
+    border: 1px solid var(--panel2);
+    border-radius: 20px;
+    background: var(--bg);
+    transition: background 0.3s, backdrop-filter 0.3s, border 0.3s, box-shadow 0.3s, transform 0.12s ease-out;
+    will-change: transform;
+  }
+  .liquid-bg {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: -1;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.7s ease;
+  }
+  body.liquid-glass .liquid-bg {
+    opacity: 1;
+  }
+  .liquid-bg .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    will-change: transform;
+  }
+  .liquid-bg .blob1 {
+    width: 42vmax;
+    height: 42vmax;
+    left: -8%;
+    top: -6%;
+    background: radial-gradient(circle, rgba(56,189,248,0.32), rgba(56,189,248,0) 70%);
+    animation: liquidDrift1 24s ease-in-out infinite;
+  }
+  .liquid-bg .blob2 {
+    width: 36vmax;
+    height: 36vmax;
+    right: -10%;
+    top: 40%;
+    background: radial-gradient(circle, rgba(168,85,247,0.28), rgba(168,85,247,0) 70%);
+    animation: liquidDrift2 28s ease-in-out infinite;
+  }
+  .liquid-bg .blob3 {
+    width: 30vmax;
+    height: 30vmax;
+    left: 30%;
+    bottom: -12%;
+    background: radial-gradient(circle, rgba(56,189,248,0.2), rgba(56,189,248,0) 70%);
+    animation: liquidDrift3 32s ease-in-out infinite;
+  }
+  [data-theme="light"] .liquid-bg .blob1 { background: radial-gradient(circle, rgba(56,189,248,0.22), rgba(56,189,248,0) 70%); }
+  [data-theme="light"] .liquid-bg .blob2 { background: radial-gradient(circle, rgba(168,85,247,0.2), rgba(168,85,247,0) 70%); }
+  [data-theme="light"] .liquid-bg .blob3 { background: radial-gradient(circle, rgba(56,189,248,0.14), rgba(56,189,248,0) 70%); }
+  @keyframes liquidDrift1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(8vmax, 6vmax) scale(1.15); }
+    66% { transform: translate(-4vmax, 10vmax) scale(0.9); }
+  }
+  @keyframes liquidDrift2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-9vmax, -7vmax) scale(1.2); }
+  }
+  @keyframes liquidDrift3 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    40% { transform: translate(7vmax, -5vmax) scale(1.12); }
+    75% { transform: translate(-6vmax, 3vmax) scale(0.94); }
+  }
+  body.liquid-glass .calc {
+    background: rgba(255,255,255,0.045);
+    backdrop-filter: blur(28px) saturate(140%);
+    -webkit-backdrop-filter: blur(28px) saturate(140%);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+    transform-style: preserve-3d;
+  }
+  body.liquid-glass .calc::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 30%), rgba(255,255,255,0.22), transparent 55%);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+  }
+  body.liquid-glass .calc.tilting::before {
+    opacity: 1;
+  }
+  [data-theme="light"] body.liquid-glass .calc {
+    background: rgba(255,255,255,0.3);
+    border: 1px solid rgba(255,255,255,0.45);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  }
+  [data-theme="light"] body.liquid-glass .calc::before {
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 30%), rgba(255,255,255,0.55), transparent 55%);
+  }
+  body.liquid-glass .drawer {
+    background: rgba(20,20,22,0.4) !important;
+    backdrop-filter: blur(26px) saturate(130%);
+    -webkit-backdrop-filter: blur(26px) saturate(130%);
+  }
+  [data-theme="light"] body.liquid-glass .drawer {
+    background: rgba(255,255,255,0.35) !important;
+  }
+  body.liquid-glass .authmodal {
+    background: rgba(23,24,26,0.45) !important;
+    backdrop-filter: blur(26px) saturate(130%);
+    -webkit-backdrop-filter: blur(26px) saturate(130%);
+  }
+  [data-theme="light"] body.liquid-glass .authmodal {
+    background: rgba(255,255,255,0.4) !important;
+  }
+  .title {
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    color: var(--text);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .title:hover {
+    color: var(--text);
+    text-decoration: underline;
+  }
+  .titlerow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .leftgroup {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .rightgroup {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .school-logo {
+    font-size: 16px;
+    line-height: 1;
+  }
+  .school-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: var(--bg);
+    background: var(--accent-color, #F4C542);
+    padding: 3px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .menubtn {
+    height: auto;
+    width: auto;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 16px;
+    padding: 0;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+  }
+  .menubtn:hover { color: var(--text); }
+  .prev {
+    font-size: 13px;
+    height: 16px;
+    color: var(--muted);
+    text-align: right;
+    margin-bottom: 6px;
+  }
+  .display {
+    font-size: 48px;
+    line-height: 1;
+    font-weight: 700;
+    color: var(--text);
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 28px;
+  }
+  .display span { padding: 1px 3px; }
+  .display.selected span {
+    background: var(--text);
+    color: var(--bg);
+  }
+  .toprow {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .toprow button { height: 36px; flex: 1; }
+  .xbtn, .copybtn { border-radius: 14px; }
+  .infopanel {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: calc(100% + 14px);
+    width: 190px;
+    background: var(--panel);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 11px;
+    line-height: 1.8;
+    color: var(--text);
+    z-index: 10;
+  }
+  .infopanel.show { display: block; }
+  .infotitle { color: var(--text); margin-bottom: 4px; font-weight: bold; }
+  @media (max-width: 700px) {
+    .infopanel {
+      left: 50%;
+      top: auto;
+      bottom: calc(100% + 10px);
+      transform: translateX(-50%);
+      width: 240px;
+    }
+  }
+  .keypad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  button {
+    height: 52px;
+    border: none;
+    background: var(--panel);
+    border-radius: 14px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: bold;
+    font-size: 19px;
+    color: var(--text);
+    cursor: pointer;
+    transition: opacity 0.1s;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  button:active { opacity: 0.6; }
+  .fn { background: var(--panel2); color: var(--text); font-size: 15px; }
+  .num { background: var(--panel); color: var(--text); }
+  .op { background: var(--panel2); color: var(--text); }
+  .op.active { color: var(--bg); background: var(--text); }
+  .eq { color: var(--bg); background: var(--text); }
+  .ac { background: var(--panel2); color: var(--text); font-size: 15px; }
+  .zero { grid-column: span 2; justify-content: flex-start; padding-left: 18px; display: flex; align-items: center; }
+  .chalk-icon { display: none; margin-left: 8px; flex-shrink: 0; }
+  body.back-to-school .zero .chalk-icon { display: inline-block; }
+  body.back-to-school,
+  body.back-to-school * {
+    font-family: 'Patrick Hand', cursive;
+  }
+  
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 20;
+  }
+  .overlay.show { opacity: 1; pointer-events: auto; }
+  .drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 320px;
+    max-width: 85vw;
+    background: var(--drawer-bg);
+    border-right: 1px solid var(--panel2);
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 21;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .drawer.open { transform: translateX(0); }
+  .history-drawer {
+    left: auto;
+    right: 0;
+    border-right: none;
+    border-left: 1px solid var(--panel2);
+    transform: translateX(100%);
+  }
+  .history-drawer.open { transform: translateX(0); }
+  .drawerhead {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text);
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .closebtn {
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+    height: auto;
+    width: auto;
+  }
+  .closebtn:hover { color: var(--text); }
+  .drawersection { margin-bottom: 24px; }
+  .drawerlabel {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  
+  .setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: var(--text);
+  }
+  .setting-row select {
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--panel2);
+    font-family: inherit;
+    outline: none;
+    max-width: 140px;
+  }
+  .setting-row input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 42px;
+    height: 24px;
+    min-width: 42px;
+    border-radius: 8px;
+    background: var(--panel2);
+    border: 1px solid var(--panel2);
+    position: relative;
+    cursor: grab;
+    touch-action: none;
+    transition: background 0.2s, border-color 0.2s;
+    outline: none;
+  }
+  .setting-row input[type="checkbox"]::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    background: var(--text);
+    transform: translateX(var(--knob-x, 0px));
+    transition: transform 0.2s, background 0.2s;
+  }
+  .setting-row input[type="checkbox"]:checked {
+    background: var(--accent-color, #38BDF8);
+    border-color: var(--accent-color, #38BDF8);
+  }
+  .setting-row input[type="checkbox"]:checked::before {
+    transform: translateX(var(--knob-x, 18px));
+    background: #FFFFFF;
+  }
+  .setting-row input[type="checkbox"].dragging {
+    cursor: grabbing;
+  }
+  .setting-row input[type="checkbox"].dragging::before {
+    transition: none;
+  }
+  .setting-row input[type="checkbox"].dragging.drag-past-half {
+    background: var(--accent-color, #38BDF8);
+    border-color: var(--accent-color, #38BDF8);
+  }
+  .setting-row input[type="checkbox"].dragging.drag-past-half::before {
+    background: #FFFFFF;
+  }
+  .danger-btn {
+    width: 100%;
+    height: 38px;
+    background: #EF4444;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 12px;
+  }
+
+  .adtext {
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--panel);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+  .authbtns { display: flex; gap: 8px; }
+  .authbtn {
+    flex: 1;
+    height: 38px;
+    font-size: 12px;
+    background: var(--panel);
+    color: var(--text);
+    border-radius: 10px;
+  }
+  .authbtn.primary { background: var(--text); color: var(--bg); }
+  .adminmenu-btn {
+    width: 100%;
+    height: 40px;
+    background: rgba(56,189,248,0.1);
+    border: 1px solid #38BDF8;
+    color: #38BDF8;
+    font-size: 12px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 14px;
+    margin-bottom: 6px;
+  }
+  .profilecard {
+    background: var(--panel);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .profilename { color: var(--text); font-size: 14px; font-weight: bold; margin-bottom: 2px; }
+  .profileemail { color: var(--muted); font-size: 11px; }
+  .profilenamerow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .editnamebtn {
+    height: auto;
+    width: auto;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 0;
+    cursor: pointer;
+  }
+  .editnamebtn:hover { color: var(--hover); }
+  .editnamerow {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--panel2);
+  }
+  .editnamebtns {
+    display: flex;
+    gap: 8px;
+  }
+  .editnamebtns .authbtn {
+    flex: 1;
+    margin-top: 0;
+  }
+
+  .historyheader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 16px 0 10px 0;
+  }
+  .historyheader .drawerlabel { margin-bottom: 0; }
+  .clearhist {
+    height: auto;
+    width: auto;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 11px;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .clearhist:hover { color: var(--hover); }
+  .historylist {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 12px;
+    max-height: 32vh;
+    overflow-y: auto;
+  }
+  .historyitem {
+    background: var(--panel);
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+  .historyitem:hover { filter: brightness(1.15); }
+  .historyitemtext { min-width: 0; }
+  .historydelete {
+    height: auto;
+    width: auto;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1;
+    padding: 2px 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .historydelete:hover { color: #F87171; }
+  .historyexpr { color: var(--muted); font-size: 11px; }
+  .historyresult { color: var(--text); font-size: 15px; font-weight: bold; }
+  .historyempty { color: var(--muted); font-size: 12px; }
+
+  .admincard {
+    background: var(--panel);
+    border: 1px solid #38BDF8;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .admintitle { color: #38BDF8; font-size: 12px; font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .useritem {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--panel2);
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    font-size: 11px;
+  }
+  .userinfo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+  .actionbtns { display: flex; gap: 6px; margin-top: 4px; }
+  .msgbtn {
+    background: #38BDF8;
+    color: #000;
+    border: none;
+    padding: 4px 6px;
+    font-size: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    height: auto;
+    width: auto;
+    font-weight: bold;
+  }
+  .delbtn {
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    padding: 4px 6px;
+    font-size: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    height: auto;
+    width: auto;
+    font-weight: bold;
+  }
+  .broadcastbtn {
+    width: 100%;
+    height: 30px;
+    background: #38BDF8;
+    color: #071019;
+    font-size: 11px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+
+  .admin-console-window {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 360px;
+    max-width: calc(100vw - 40px);
+    height: 260px;
+    background: #090D12;
+    border: 1px solid #38BDF8;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 15px rgba(56,189,248,0.2);
+    z-index: 100;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: monospace;
+  }
+  .admin-console-window.show { display: flex; }
+  .console-header {
+    background: #121820;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #1E293B;
+    color: #38BDF8;
+    font-size: 11px;
+    font-weight: bold;
+  }
+  .console-body {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    font-size: 11px;
+    color: #A7F3D0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .console-line { word-break: break-all; }
+  .console-line.err { color: #F87171; }
+  .console-line.sys { color: #38BDF8; }
+  .console-input-row {
+    display: flex;
+    background: #0F172A;
+    border-top: 1px solid #1E293B;
+    padding: 4px 8px;
+    align-items: center;
+  }
+  .console-prompt { color: #38BDF8; font-size: 12px; margin-right: 6px; font-weight: bold; }
+  .console-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #F8FAFC;
+    font-family: monospace;
+    font-size: 11px;
+    outline: none;
+  }
+
+  .authoverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 30;
+  }
+  .authoverlay.show { opacity: 1; pointer-events: auto; }
+  .authmodal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 290px;
+    background: var(--drawer-bg);
+    border: 1px solid var(--panel2);
+    border-radius: 16px;
+    padding: 22px;
+    z-index: 31;
+  }
+  .authmodal.show { display: block; }
+  .authmodal.special {
+    border: 1px solid #38BDF8;
+    box-shadow: 0 0 0 1px rgba(56,189,248,0.15), 0 20px 60px rgba(56,189,248,0.15);
+    background: linear-gradient(180deg, var(--drawer-bg), var(--panel));
+  }
+  .authhead {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 18px;
+  }
+  .authinput {
+    width: 100%;
+    height: 42px;
+    background: var(--panel);
+    border: 1px solid var(--panel2);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    padding: 0 12px;
+    margin-bottom: 8px;
+  }
+  .autherror {
+    color: #F27878;
+    font-size: 10px;
+    line-height: 1.3;
+    min-height: 24px;
+    margin-bottom: 6px;
+  }
+  .authsubmit {
+    width: 100%;
+    height: 42px;
+    background: var(--text);
+    color: var(--bg);
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .authsubmit.special { background: #38BDF8; color: #071019; }
+  .authswitch { font-size: 11px; color: var(--text); text-align: center; }
+  .authswitch a { color: var(--text); text-decoration: underline; cursor: pointer; }
+  .verifyinfo { font-size: 12px; color: var(--text); line-height: 1.6; margin-bottom: 12px; }
+  .democode {
+    background: var(--panel);
+    border: 1px dashed var(--panel2);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 6px;
+    color: var(--text);
+  }
+
+  .apple-loader-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 40;
+  }
+  .apple-loader-modal.show { display: block; }
+  
+  /* GIF tabanlı özel spinner sınıfı */
+  .custom-gif-spinner {
+    width: 48px;
+    height: 48px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="100" cy="100" r="80" fill="none" stroke="%2338BDF8" stroke-width="16" stroke-dasharray="120 400" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" values="0 100 100;360 100 100" dur="1s" repeatCount="indefinite"/></circle></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    margin: 0 auto;
+  }
+
+  /* Apple (iOS) tarzı gerçek activity indicator spinner */
+  .ios-spinner {
+    width: 40px;
+    height: 40px;
+    position: relative;
+    margin: 0 auto;
+  }
+  .ios-spinner div {
+    position: absolute;
+    left: 18px;
+    top: 2px;
+    width: 3.5px;
+    height: 11px;
+    background: var(--text);
+    border-radius: 2px;
+    animation: ios-fade 1s linear infinite;
+    transform-origin: 50% 18px;
+  }
+  .ios-spinner div:nth-child(1) { transform: rotate(0deg); animation-delay: -0.916s; }
+  .ios-spinner div:nth-child(2) { transform: rotate(30deg); animation-delay: -0.833s; }
+  .ios-spinner div:nth-child(3) { transform: rotate(60deg); animation-delay: -0.75s; }
+  .ios-spinner div:nth-child(4) { transform: rotate(90deg); animation-delay: -0.666s; }
+  .ios-spinner div:nth-child(5) { transform: rotate(120deg); animation-delay: -0.583s; }
+  .ios-spinner div:nth-child(6) { transform: rotate(150deg); animation-delay: -0.5s; }
+  .ios-spinner div:nth-child(7) { transform: rotate(180deg); animation-delay: -0.416s; }
+  .ios-spinner div:nth-child(8) { transform: rotate(210deg); animation-delay: -0.333s; }
+  .ios-spinner div:nth-child(9) { transform: rotate(240deg); animation-delay: -0.25s; }
+  .ios-spinner div:nth-child(10) { transform: rotate(270deg); animation-delay: -0.166s; }
+  .ios-spinner div:nth-child(11) { transform: rotate(300deg); animation-delay: -0.083s; }
+  .ios-spinner div:nth-child(12) { transform: rotate(330deg); animation-delay: 0s; }
+  @keyframes ios-fade {
+    0% { opacity: 1; }
+    100% { opacity: 0.15; }
+  }
+
+  .version { position: fixed; bottom: 10px; right: 14px; font-size: 11px; color: var(--muted); z-index: 5; }
+</style>
+</head>
+<body>
+  <div class="liquid-bg" aria-hidden="true">
+    <span class="blob blob1"></span>
+    <span class="blob blob2"></span>
+    <span class="blob blob3"></span>
+  </div>
+  <div class="initial-page-loader" id="pageLoader">
+    <div class="ios-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+    <div class="loading-text" id="loadingText">Yükleniyor</div>
+  </div>
+
+  <div class="kvkk-modal-overlay" id="kvkkOverlay">
+    <div class="kvkk-modal-card">
+      <div class="kvkk-modal-header">
+        <span>📜 İzinlerimiz Güncelleşti - Kapsamlı KVKK Metni</span>
+      </div>
+      <div class="kvkk-modal-body">
+        <div class="kvkk-notice-box" style="color: var(--text); background: rgba(56,189,248,0.1); border-color: #38BDF8;">
+          ✨ <strong>İzinlerimiz güncelleşti!</strong> Lütfen güncellenen kullanım şartlarını ve aydınlatma metnini inceleyiniz.
+        </div>
+        <h4>1. KVKK Aydınlatma Metni ve Veri Güvenliği Politikası</h4>
+        <p>6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") çerçevesinde, veri sorumlusu sıfatıyla hareket eden platformumuz, kullanıcılara ait tüm kişisel verilerin gizliliğini ve dokunulmazlığını en üst Düzeyde korumayı temel ilke edinmiştir. Sistem bünyesinde toplanmakta olan kullanıcı adı, e-posta adresi, oturum geçmişi ve aktivasyon kayıtları; sadece platformun işlevselliğini sürdürebilmesi, sistem güvenliğinin sağlanması, hataların tespiti ve kullanıcı yetkilendirme süreçlerinin hatasız şekilde yürütülmesi amacıyla işlenmektedir. Verileriniz endüstri standartlarında şifreleme yöntemleri ile korunmaktadır.</p>
+
+        <h4>2. Verilerin Yönetici Tarafından Görünürlüğü ve Gizlilik Bildirimi</h4>
+        <p>Platform üzerindeki hesabınıza ait kullanıcı adı, e-posta adresi ve giriş hareketleri gibi tüm üyelik ve profil bilgileri, <strong>YALNIZCA VE SADECE SİSTEM YÖNETİCİLERİ (ADMIN) TARAFINDAN GÖRÜLEBİLİR VE YÖNETİLEBİLİRDİR.</strong> Bu bilgiler, sistemin teknik bütünlüğünü sağlamak, hesap sorunlarını çözmek ve olası güvenlik ihlallerini tespit etmek amacıyla sistem yöneticilerinin erişimine açıktır.</p>
+
+        <h4>3. Hesap Bilgilerinin 3. Şahıslarla Paylaşılmaması ve Yasal Yaptırımlar</h4>
+        <p>Platformumuz, yönetici panelinde görüntülenen veya veri tabanında tutulan kullanıcı bilgilerini, oturum kayıtlarını veya hesap şifrelerini kesinlikle <strong>3. ŞAHISLARLA, ŞİRKETLERLE VEYA HANGİ AMAÇla OLURSA OLSUN DIŞ KURUMLarla PAYLAŞMAZ, SATMAZ VE AKTARMAZ.</strong> Kullanıcı verilerinin izinsiz olarak 3. kişilere aktarılması veya sızdırılması durumunda, bu eylem <strong>TÜRK CEZA KANUNU (TCK) MADDE 136 VE 6698 SAYILI KVKK HÜKÜMLERİ UYARINCA AĞIR BİR SUÇ TEŞKİL EDER.</strong> Tespiti halinde yetkili adli merciler nezdinde yasal süreç başlatılacaktır.</p>
+
+        <h4>4. Kullanıcı Hakları ve Onay Mekanizması</h4>
+        <p>Uygulamaya erişim sağlamak için yukarıda detaylandırılan KVKK Aydınlatma Metni'ni, Yönetici Veri Görünürlüğü Bildirimi'ni ve Hesap Güvenliği Sözleşmesi'ni okuduğunuzu, tüm maddeleri anladığınızı ve kabul ettiğinizi beyan etmeniz gerekmektedir.</p>
+
+        <div class="kvkk-notice-box">
+          Kabul Ediyorum'a bastığınızda tüm bu yasaları kabul etmiş olursunuz, eğer reddedeterseniz siteye erişim sağlayamazsınız. <br><br>
+          <em>(Not: KVKK kanunu gereğince; bu şartları yalnızca hesap açmak için onaylamış olursunuz.)</em>
+        </div>
+      </div>
+      <div class="kvkk-modal-footer">
+        <button class="kvkk-btn kvkk-btn-reject" onclick="rejectKvkk()">Reddet</button>
+        <button class="kvkk-btn kvkk-btn-accept" onclick="acceptKvkk()">Kabul Ediyorum</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="version">v:32</div>
+  <div class="overlay" id="overlay" onclick="closeDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawerhead">
+      <span id="drawerTitle">Ayarlar</span>
+      <button class="closebtn" onclick="closeDrawer()">×</button>
+    </div>
+
+    <div class="drawersection">
+      <div class="drawerlabel" id="settingsLabel">UYGULAMA AYARLARI</div>
+      
+      <div class="setting-row">
+        <span id="themeLabelText">Tema</span>
+        <select id="themeSelect" onchange="changeThemeFromSelect(this.value)">
+          <option value="dark">🌙 Koyu</option>
+          <option value="light">☀️ Açık</option>
+          <option value="cyberpunk">⚡ Cyberpunk</option>
+          <option value="oled">🖤 OLED Siyah</option>
+        </select>
+      </div>
+
+      <div class="setting-row" id="backToSchoolRow">
+        <label for="backToSchoolToggle" id="backToSchoolLabelText">🎒 Okula Dönüş</label>
+        <input type="checkbox" id="backToSchoolToggle" onchange="toggleBackToSchool(this.checked)">
+      </div>
+
+      <div class="setting-row">
+        <label for="liquidGlassToggle" id="liquidGlassLabelText">Liquid Glass (Cam Efekti)</label>
+        <input type="checkbox" id="liquidGlassToggle" onchange="toggleLiquidGlass(this.checked)">
+      </div>
+
+      <!-- Bölge (Region) Seçimi -->
+      <div class="setting-row">
+        <span id="regionLabelText">Region</span>
+        <select id="regionSelect" onchange="updateSetting('region', this.value)">
+          <option value="Türkiye">Türkiye</option>
+          <option value="United States">United States</option>
+          <option value="Germany">Germany</option>
+          <option value="United Kingdom">United Kingdom</option>
+          <option value="France">France</option>
+          <option value="Japan">Japan</option>
+          <option value="Azerbaijan">Azerbaijan</option>
+        </select>
+      </div>
+
+      <!-- 20 Farklı Dil Seçeneği -->
+      <div class="setting-row">
+        <span id="langLabelText">Dil (Language)</span>
+        <select id="languageSelect" onchange="changeLanguage(this.value)">
+          <option value="tr">Türkçe</option>
+          <option value="en">English</option>
+          <option value="de">Deutsch</option>
+          <option value="fr">Français</option>
+          <option value="es">Español</option>
+          <option value="it">Italiano</option>
+          <option value="az">Azərbaycan</option>
+          <option value="ru">Русский</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="zh">中文</option>
+          <option value="ar">العربية</option>
+          <option value="pt">Português</option>
+          <option value="nl">Nederlands</option>
+          <option value="pl">Polski</option>
+          <option value="sv">Svenska</option>
+          <option value="el">Ελληνικά</option>
+          <option value="hi">हिन्दी</option>
+          <option value="id">Bahasa Indonesia</option>
+          <option value="vi">Tiếng Việt</option>
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <label for="vibrationToggle" id="vibrationLabelText">Tuş Titreşimi</label>
+        <input type="checkbox" id="vibrationToggle" onchange="updateSetting('vibration', this.checked)">
+      </div>
+
+      <div class="setting-row">
+        <label for="soundToggle" id="soundLabelText">Tuş Sesi (Baloncuk 🫧)</label>
+        <input type="checkbox" id="soundToggle" onchange="updateSetting('sound', this.checked)">
+      </div>
+
+      <div class="setting-row">
+        <span id="precisionLabelText">Ondalık Hassasiyeti</span>
+        <select id="precisionSelect" onchange="updateSetting('precision', this.value)">
+          <option value="auto">Otomatik</option>
+          <option value="2">2 Basamak (0.00)</option>
+          <option value="4">4 Basamak (0.0000)</option>
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <label for="fullscreenToggle" id="fullscreenLabelText">Tam Ekran Modu</label>
+        <input type="checkbox" id="fullscreenToggle" onchange="toggleFullscreenSetting(this.checked)">
+      </div>
+
+      <button class="adminmenu-btn" id="adminPanelBtn" onclick="openAdminAuthModal()">🛡️ Admin Paneli</button>
+      
+      <div class="admincard" id="adminPanel" style="display:none; margin-top: 10px;">
+        <div class="admintitle">
+          <span id="adminPanelTitleText">🛡️ Admin Paneli</span>
+          <button class="closebtn" style="font-size: 14px;" onclick="closeAdminPanel()">✕</button>
+        </div>
+        <button class="broadcastbtn" id="broadcastBtnText" onclick="sendBroadcastMessage()">📢 Tümüne Mesaj Gönder</button>
+        <div id="adminUserList"></div>
+      </div>
+
+      <button class="danger-btn" id="resetBtnText" onclick="resetAllData()">Ayarları & Geçmişi Sıfırla</button>
+    </div>
+
+    <div class="drawersection" id="accountSection">
+      <div class="drawerlabel" id="accountLabel">HESAP</div>
+      <div id="accountLoggedOut">
+        <div class="adtext" id="adText">Sistem kayıtlarınızı güvenle saklamak ve kişiselleştirilmiş hesap özelliklerinden tam performans almak için kayıt olun.</div>
+        <div class="authbtns">
+          <button class="authbtn primary" id="registerBtn" onclick="openRegister()">Kayıt Ol</button>
+          <button class="authbtn" id="loginBtn" onclick="openLogin()">Giriş Yap</button>
+        </div>
+      </div>
+      <div id="accountLoggedIn" style="display:none;">
+        <div class="profilecard">
+          <div class="profilenamerow">
+            <div class="profilename" id="profileName"></div>
+            <button class="editnamebtn" onclick="openEditUsername()" title="Kullanıcı adını değiştir">✎</button>
+          </div>
+          <div class="profileemail" id="profileEmail"></div>
+          <div class="editnamerow" id="editNameRow" style="display:none;">
+            <input class="authinput" id="editUsernameInput" placeholder="@yenikullaniciadi (5-20 karakter)" maxlength="20" oninput="ensureAtPrefix('editUsernameInput')">
+            <div class="autherror" id="editNameError"></div>
+            <div class="editnamebtns">
+              <button class="authbtn primary" onclick="saveUsername()">Kaydet</button>
+              <button class="authbtn" onclick="closeEditUsername()">Vazgeç</button>
+            </div>
+          </div>
+        </div>
+        <button class="authbtn" id="logoutBtn" onclick="logout()">Çıkış Yap</button>
+        <button class="danger-btn" id="deleteAccountBtn" onclick="deleteAccount()">Hesabı Sil</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="historyOverlay" onclick="closeHistoryDrawer()"></div>
+  <div class="drawer history-drawer" id="historyDrawer">
+    <div class="drawerhead">
+      <span id="historyDrawerTitle">Kayıtlar</span>
+      <button class="closebtn" onclick="closeHistoryDrawer()">×</button>
+    </div>
+    <div class="historyheader">
+      <div class="drawerlabel" id="historyLabel">HESAP KAYITLARI</div>
+      <button class="clearhist" id="clearHistBtn" onclick="clearHistory()">Temizle</button>
+    </div>
+    <div class="historylist" id="historyList"></div>
+  </div>
+
+  <div class="calc">
+    <div class="titlerow">
+      <div class="leftgroup">
+        <svg width="20" height="20" viewBox="0 0 64 64" style="border-radius:5px;flex-shrink:0;"><rect width="64" height="64" rx="14" fill="#101012"/><text x="32" y="45" font-family="monospace" font-weight="bold" font-size="36" fill="#F2F2F0" text-anchor="middle">X</text></svg>
+        <button class="menubtn" onclick="toggleDrawer()" title="Ayarlar/Settings"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></button>
+        <span id="schoolLogo" class="school-logo" style="display:none;">🍎</span>
+        <a class="title" href="https://xcalculator.edgeone.dev/" rel="noopener">X-Calculator</a>
+        <span id="schoolBadge" class="school-badge" style="display:none;">Back to School</span>
+      </div>
+      <div class="rightgroup">
+        <button class="menubtn" onclick="openHistoryDrawer()" title="Kayıtlar/History"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></button>
+      </div>
+    </div>
+    <div class="screen">
+      <div class="prev" id="prev"></div>
+      <div class="display" id="display"><span id="displayText">0</span></div>
+    </div>
+    <div class="toprow">
+      <button class="fn infobtn" id="infoBtn" onclick="toggleInfo(); handleBtnClick();" title="Bilgi/Info">?</button>
+      <button class="fn copybtn" id="copyBtn" onclick="copyResult(); handleBtnClick();" title="Kopyala/Copy">⧉</button>
+      <button class="fn xbtn" onclick="backspace(); handleBtnClick();" title="Sil/Backspace">X</button>
+    </div>
+    <div class="infopanel" id="infoPanel">
+      <div class="infotitle" id="shortcutsTitle">Klavye Kısayolları</div>
+      <div id="sc1">0–9 → rakam</div>
+      <div id="sc2">+ − * / → işlem</div>
+      <div id="sc3">Enter veya = → eşittir</div>
+      <div id="sc4">Backspace → sil</div>
+      <div id="sc5">Esc → temizle</div>
+    </div>
+    <div class="keypad">
+      <button class="ac" onclick="clearAll(); handleBtnClick();" title="Temizle/Clear">AC</button>
+      <button class="fn" onclick="toggleSign(); handleBtnClick();" title="İşaret Değiştir/Toggle Sign">+/−</button>
+      <button class="fn" onclick="inputPercent(); handleBtnClick();" title="Yüzde/Percent">%</button>
+      <button class="op" id="op-÷" onclick="handleOperator('÷'); handleBtnClick();" title="Bölü/Divide">÷</button>
+
+      <button class="num" onclick="inputDigit('7'); handleBtnClick();" title="Yedi/Seven">7</button>
+      <button class="num" onclick="inputDigit('8'); handleBtnClick();" title="Sekiz/Eight">8</button>
+      <button class="num" onclick="inputDigit('9'); handleBtnClick();" title="Dokuz/Nine">9</button>
+      <button class="op" id="op-×" onclick="handleOperator('×'); handleBtnClick();" title="Çarpı/Multiply">×</button>
+
+      <button class="num" onclick="inputDigit('4'); handleBtnClick();" title="Dört/Four">4</button>
+      <button class="num" onclick="inputDigit('5'); handleBtnClick();" title="Beş/Five">5</button>
+      <button class="num" onclick="inputDigit('6'); handleBtnClick();" title="Altı/Six">6</button>
+      <button class="op" id="op-−" onclick="handleOperator('−'); handleBtnClick();" title="Eksi/Minus">−</button>
+
+      <button class="num" onclick="inputDigit('1'); handleBtnClick();" title="Bir/One">1</button>
+      <button class="num" onclick="inputDigit('2'); handleBtnClick();" title="İki/Two">2</button>
+      <button class="num" onclick="inputDigit('3'); handleBtnClick();" title="Üç/Three">3</button>
+      <button class="op" id="op-+" onclick="handleOperator('+'); handleBtnClick();" title="Artı/Plus">+</button>
+
+      <button class="num zero" onclick="inputDigit('0'); handleBtnClick();" title="Sıfır/Zero">0<svg class="chalk-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="4" y="9" width="16" height="7" rx="3" fill="#FDF6E3" stroke="#C9BFA0" stroke-width="1" transform="rotate(-10 12 12)"/><rect x="4" y="9" width="4.5" height="7" rx="2.2" fill="#E4D8B4" transform="rotate(-10 12 12)"/></svg></button>
+      <button class="num" onclick="inputDecimal(); handleBtnClick();" title="Ondalık/Decimal">.</button>
+      <button class="eq" onclick="handleEquals(); handleBtnClick();" title="Eşittir/Equals">=</button>
+    </div>
+  </div>
+
+  <div class="admin-console-window" id="adminConsole">
+    <div class="console-header">
+      <span id="consoleTitleText">💻 Admin Komut Konsolu</span>
+      <button class="closebtn" style="font-size: 12px;" onclick="closeConsole()">✕</button>
+    </div>
+    <div class="console-body" id="consoleLogs">
+      <div class="console-line sys" id="consoleActiveText">Admin Konsolu Aktif. Komutlar için /help yazın.</div>
+    </div>
+    <div class="console-input-row">
+      <span class="console-prompt">&gt;</span>
+      <input type="text" class="console-input" id="consoleCmd" placeholder="/gb Merhaba..." onkeydown="handleConsoleCmd(event)">
+    </div>
+  </div>
+
+  <div class="authoverlay" id="authOverlay" onclick="closeAuth()"></div>
+
+  <div class="authmodal" id="registerModal">
+    <div class="authhead">
+      <span id="regModalTitle">Kayıt Ol</span>
+      <button class="closebtn" onclick="closeAuth()">×</button>
+    </div>
+    <input class="authinput" id="regUsername" placeholder="@kullaniciadi (5-20 karakter)" oninput="ensureAtPrefix('regUsername')">
+    <input class="authinput" id="regEmail" type="email" placeholder="E-posta">
+    <input class="authinput" id="regPassword" type="password" placeholder="Şifre">
+    <div class="autherror" id="regError"></div>
+    <button class="authsubmit" id="regSubmitBtn" onclick="submitRegister()">Kayıt Ol</button>
+    <div class="authswitch"><span id="hasAccountText">Zaten hesabın var mı?</span> <a onclick="switchToLogin()" id="switchToLoginBtn">Giriş yap</a></div>
+  </div>
+
+  <div class="authmodal special" id="loginModal">
+    <div class="authhead">
+      <span id="loginModalTitle">Giriş Yap</span>
+      <button class="closebtn" onclick="closeAuth()">×</button>
+    </div>
+    <input class="authinput" id="loginEmail" type="email" placeholder="E-posta">
+    <input class="authinput" id="loginPassword" type="password" placeholder="Şifre">
+    <div class="autherror" id="loginError"></div>
+    <button class="authsubmit special" id="loginSubmitBtn" onclick="submitLogin()">Giriş Yap</button>
+    <div class="authswitch"><span id="noAccountText">Hesabın yok mu?</span> <a onclick="switchToRegister()" id="switchToRegisterBtn">Kayıt ol</a></div>
+  </div>
+
+  <div class="authmodal special" id="adminAuthModal">
+    <div class="authhead">
+      <span id="adminLoginTitleText">🛡️ Admin Girişi</span>
+      <button class="closebtn" onclick="closeAuth()">×</button>
+    </div>
+    <input class="authinput" id="adminAuthPassword" type="password" placeholder="Admin Şifresi">
+    <div class="autherror" id="adminAuthError"></div>
+    <button class="authsubmit special" onclick="submitAdminAuth()" id="openPanelBtnText">Paneli Aç</button>
+  </div>
+
+  <div class="apple-loader-modal" id="appleLoaderModal">
+    <div class="ios-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+  </div>
+
+  <div class="authmodal" id="verifyModal">
+    <div class="authhead">
+      <span id="verifyTitleText">Doğrulama Kodu</span>
+      <button class="closebtn" onclick="closeAuth()">×</button>
+    </div>
+    <div class="verifyinfo" id="verifyInfo"></div>
+    <div class="democode" id="demoCode"></div>
+    <input class="authinput" id="verifyCode" placeholder="6 haneli kod" maxlength="6">
+    <div class="autherror" id="verifyError"></div>
+    <button class="authsubmit" onclick="submitVerify()" id="verifySubmitBtn">Doğrula</button>
+    <div class="authswitch"><a onclick="resendCode()" id="resendLink">Kodu tekrar gönder</a></div>
+  </div>
+
+<script>
+  let display = "0";
+  let prevValue = null;
+  let operator = null;
+  let waitingForNext = false;
+  let historyExprOverride = null;
+
+  const defaultSettings = {
+    theme: 'dark',
+    region: 'Türkiye',
+    language: 'tr',
+    vibration: true,
+    sound: true,
+    precision: 'auto',
+    fullscreen: false,
+    liquidGlass: false,
+    backToSchool: false
+  };
+
+  let userSettings = JSON.parse(localStorage.getItem('calc_settings')) || defaultSettings;
+  if (userSettings.fullscreen === undefined) userSettings.fullscreen = false;
+  if (userSettings.liquidGlass === undefined) userSettings.liquidGlass = false;
+  if (userSettings.backToSchool === undefined) userSettings.backToSchool = false;
+  let currentUser = JSON.parse(localStorage.getItem('xcalc_currentUser') || 'null');
+  let history = [];
+  let pendingRegistration = null;
+
+  const ADMIN_EMAIL = "admin@admin.com";
+  const ADMIN_PASS = "411.s.e.a.990.lion.111";
+
+  const authOverlay = document.getElementById('authOverlay');
+  const registerModal = document.getElementById('registerModal');
+  const loginModal = document.getElementById('loginModal');
+  const adminAuthModal = document.getElementById('adminAuthModal');
+  const verifyModal = document.getElementById('verifyModal');
+
+  // 20 Farklı Dil Sözlüğü
+  const translations = {
+    tr: {
+      drawerTitle: "Ayarlar",
+      settingsLabel: "UYGULAMA AYARLARI",
+      themeLabel: "Tema",
+      regionLabel: "Region",
+      langLabel: "Dil (Language)",
+      vibrationLabel: "Tuş Titreşimi",
+      soundLabel: "Tuş Sesi (Baloncuk 🫧)",
+      precisionLabel: "Ondalık Hassasiyeti",
+      fullscreenLabel: "Tam Ekran Modu",
+      adminPanelBtn: "🛡️ Admin Paneli",
+      adminPanelTitle: "🛡️ Admin Paneli",
+      broadcastBtn: "📢 Tümüne Mesaj Gönder",
+      resetBtn: "Ayarları & Geçmişi Sıfırla",
+      accountLabel: "HESAP",
+      adText: "Sistem kayıtlarınızı güvenle saklamak ve kişiselleştirilmiş hesap özelliklerinden tam performans almak için kayıt olun.",
+      registerBtn: "Kayıt Ol",
+      loginBtn: "Giriş Yap",
+      logoutBtn: "Çıkış Yap",
+      registerTitle: "Kayıt Ol",
+      loginTitle: "Giriş Yap",
+      adminLoginTitle: "🛡️ Admin Girişi",
+      openPanelBtn: "Paneli Aç",
+      usernamePh: "Kullanıcı adı (5-20 hane)",
+      emailPh: "E-posta",
+      passwordPh: "Şifre",
+      hasAccount: "Zaten hesabın var mı?",
+      noAccount: "Hesabın yok mu?",
+      shortcutsTitle: "Klavye Kısayolları",
+      sc1: "0–9 → rakam",
+      sc2: "+ − * / → işlem",
+      sc3: "Enter veya = → eşittir",
+      sc4: "Backspace → sil",
+      sc5: "Esc → temizle",
+      consoleTitle: "💻 Admin Komut Konsolu",
+      consoleActive: "Admin Konsolu Aktif. Komutlar için /help yazın.",
+      verifyTitle: "Doğrulama Kodu",
+      verifySubmit: "Doğrula",
+      resendLink: "Kodu tekrar gönder"
+    },
+    en: {
+      drawerTitle: "Settings",
+      settingsLabel: "APP SETTINGS",
+      themeLabel: "Theme",
+      regionLabel: "Region",
+      langLabel: "Language",
+      vibrationLabel: "Key Vibration",
+      soundLabel: "Key Sound (Bubble 🫧)",
+      precisionLabel: "Decimal Precision",
+      fullscreenLabel: "Fullscreen Mode",
+      adminPanelBtn: "🛡️ Admin Panel",
+      adminPanelTitle: "🛡️ Admin Panel",
+      broadcastBtn: "📢 Broadcast Message",
+      resetBtn: "Reset Settings & History",
+      accountLabel: "ACCOUNT",
+      adText: "Sign up to securely store your preferences and access full account features.",
+      registerBtn: "Sign Up",
+      loginBtn: "Log In",
+      logoutBtn: "Log Out",
+      registerTitle: "Sign Up",
+      loginTitle: "Log In",
+      adminLoginTitle: "🛡️ Admin Login",
+      openPanelBtn: "Open Panel",
+      usernamePh: "Username (5-20 chars)",
+      emailPh: "Email",
+      passwordPh: "Password",
+      hasAccount: "Already have an account?",
+      noAccount: "Don't have an account?",
+      shortcutsTitle: "Keyboard Shortcuts",
+      sc1: "0–9 → digit",
+      sc2: "+ − * / → operation",
+      sc3: "Enter or = → equals",
+      sc4: "Backspace → delete",
+      sc5: "Esc → clear",
+      consoleTitle: "💻 Admin Command Console",
+      consoleActive: "Admin Console Active. Type /help for commands.",
+      verifyTitle: "Verification Code",
+      verifySubmit: "Verify",
+      resendLink: "Resend code"
+    },
+    de: {
+      drawerTitle: "Einstellungen",
+      settingsLabel: "APP-EINSTELLUNGEN",
+      themeLabel: "Thema",
+      regionLabel: "Region",
+      langLabel: "Sprache",
+      vibrationLabel: "Tastenvibration",
+      soundLabel: "Tastenton (Blase 🫧)",
+      precisionLabel: "Dezimalgenauigkeit",
+      fullscreenLabel: "Vollbildmodus",
+      adminPanelBtn: "🛡️ Admin-Panel",
+      adminPanelTitle: "🛡️ Admin-Panel",
+      broadcastBtn: "📢 Nachricht an alle",
+      resetBtn: "Einstellungen & Verlauf zurücksetzen",
+      accountLabel: "KONTO",
+      adText: "Registrieren Sie sich, um Ihre Einstellungen sicher zu speichern.",
+      registerBtn: "Registrieren",
+      loginBtn: "Anmelden",
+      logoutBtn: "Abmelden",
+      registerTitle: "Registrieren",
+      loginTitle: "Anmelden",
+      adminLoginTitle: "🛡️ Admin-Anmeldung",
+      openPanelBtn: "Panel öffnen",
+      usernamePh: "Benutzername (5-20 Zeichen)",
+      emailPh: "E-Mail",
+      passwordPh: "Passwort",
+      hasAccount: "Bereits ein Konto?",
+      noAccount: "Kein Konto?",
+      shortcutsTitle: "Tastkombinationen",
+      sc1: "0–9 → Ziffer",
+      sc2: "+ − * / → Operation",
+      sc3: "Enter oder = → Gleich",
+      sc4: "Rücktaste → Löschen",
+      sc5: "Esc → Zurücksetzen",
+      consoleTitle: "💻 Admin-Befehlskonsole",
+      consoleActive: "Admin-Konsole aktiv. Geben Sie /help ein.",
+      verifyTitle: "Bestätigungscode",
+      verifySubmit: "Bestätigen",
+      resendLink: "Code erneut senden"
+    },
+    fr: {
+      drawerTitle: "Paramètres",
+      settingsLabel: "PARAMÈTRES DE L'APPLICATION",
+      themeLabel: "Thème",
+      regionLabel: "Région",
+      langLabel: "Langue",
+      vibrationLabel: "Vibration des touches",
+      soundLabel: "Son des touches (Bulle 🫧)",
+      precisionLabel: "Précision décimale",
+      fullscreenLabel: "Mode Plein Écran",
+      adminPanelBtn: "🛡️ Panneau Admin",
+      adminPanelTitle: "🛡️ Panneau Admin",
+      broadcastBtn: "📢 Diffuser un message",
+      resetBtn: "Réinitialiser les paramètres",
+      accountLabel: "COMPTE",
+      adText: "Inscrivez-vous pour enregistrer vos préférences en toute sécurité.",
+      registerBtn: "S'inscrire",
+      loginBtn: "Se connecter",
+      logoutBtn: "Se déconnecter",
+      registerTitle: "S'inscrire",
+      loginTitle: "Se connecter",
+      adminLoginTitle: "🛡️ Connexion Admin",
+      openPanelBtn: "Ouvrir le panneau",
+      usernamePh: "Nom d'utilisateur (5-20 car.)",
+      emailPh: "E-mail",
+      passwordPh: "Mot de passe",
+      hasAccount: "Déjà un compte ?",
+      noAccount: "Pas de compte ?",
+      shortcutsTitle: "Raccourcis clavier",
+      sc1: "0–9 → chiffre",
+      sc2: "+ − * / → opération",
+      sc3: "Entrée ou = → égal",
+      sc4: "Retour arrière → effacer",
+      sc5: "Esc → effacer tout",
+      consoleTitle: "💻 Console de commande Admin",
+      consoleActive: "Console Admin active. Tapez /help.",
+      verifyTitle: "Code de vérification",
+      verifySubmit: "Vérifier",
+      resendLink: "Renvoyer le code"
+    },
+    es: {
+      drawerTitle: "Ajustes",
+      settingsLabel: "AJUSTES DE LA APLICACIÓN",
+      themeLabel: "Tema",
+      regionLabel: "Región",
+      langLabel: "Idioma",
+      vibrationLabel: "Vibración de teclas",
+      soundLabel: "Sonido de teclas (Burbuja 🫧)",
+      precisionLabel: "Precisión decimal",
+      fullscreenLabel: "Modo Pantalla Completa",
+      adminPanelBtn: "🛡️ Panel de Admin",
+      adminPanelTitle: "🛡️ Panel de Admin",
+      broadcastBtn: "📢 Enviar mensaje a todos",
+      resetBtn: "Restablecer ajustes e historial",
+      accountLabel: "CUENTA",
+      adText: "Regístrate para guardar tus preferencias de forma segura.",
+      registerBtn: "Registrarse",
+      loginBtn: "Iniciar Sesión",
+      logoutBtn: "Cerrar Sesión",
+      registerTitle: "Registrarse",
+      loginTitle: "Iniciar Sesión",
+      adminLoginTitle: "🛡️ Acceso de Admin",
+      openPanelBtn: "Abrir Panel",
+      usernamePh: "Usuario (5-20 car.)",
+      emailPh: "Correo electrónico",
+      passwordPh: "Contraseña",
+      hasAccount: "¿Ya tienes cuenta?",
+      noAccount: "¿No tienes cuenta?",
+      shortcutsTitle: "Atajos de teclado",
+      sc1: "0–9 → dígito",
+      sc2: "+ − * / → operación",
+      sc3: "Enter o = → igual",
+      sc4: "Retroceso → borrar",
+      sc5: "Esc → limpiar",
+      consoleTitle: "💻 Consola de comandos Admin",
+      consoleActive: "Consola Admin activa. Escribe /help.",
+      verifyTitle: "Código de verificación",
+      verifySubmit: "Verificar",
+      resendLink: "Reenviar código"
+    },
+    it: {
+      drawerTitle: "Impostazioni",
+      settingsLabel: "IMPOSTAZIONI APP",
+      themeLabel: "Tema",
+      regionLabel: "Regione",
+      langLabel: "Lingua",
+      vibrationLabel: "Vibrazione tasti",
+      soundLabel: "Suono tasti (Bolla 🫧)",
+      precisionLabel: "Precisione decimale",
+      fullscreenLabel: "Modalità Schermo Intero",
+      adminPanelBtn: "🛡️ Pannello Admin",
+      adminPanelTitle: "🛡️ Pannello Admin",
+      broadcastBtn: "📢 Invia messaggio a tutti",
+      resetBtn: "Ripristina impostazioni",
+      accountLabel: "ACCOUNT",
+      adText: "Registrati per salvare le tue preferenze in sicurezza.",
+      registerBtn: "Registrati",
+      loginBtn: "Accedi",
+      logoutBtn: "Esci",
+      registerTitle: "Registrati",
+      loginTitle: "Accedi",
+      adminLoginTitle: "🛡️ Accesso Admin",
+      openPanelBtn: "Apri Pannello",
+      usernamePh: "Nome utente (5-20 car.)",
+      emailPh: "Email",
+      passwordPh: "Password",
+      hasAccount: "Hai già un account?",
+      noAccount: "Non hai un account?",
+      shortcutsTitle: "Scorciatoie tastiera",
+      sc1: "0–9 → cifra",
+      sc2: "+ − * / → operazione",
+      sc3: "Invio o = → uguale",
+      sc4: "Backspace → cancella",
+      sc5: "Esc → pulisci",
+      consoleTitle: "💻 Console comandi Admin",
+      consoleActive: "Console Admin attiva. Digita /help.",
+      verifyTitle: "Codice di verifica",
+      verifySubmit: "Verifica",
+      resendLink: "Invia di nuovo"
+    },
+    az: {
+      drawerTitle: "Tənzimləmələr",
+      settingsLabel: "TƏTBİQ TƏNZİMLƏMƏLƏRİ",
+      themeLabel: "Tema",
+      regionLabel: "Region",
+      langLabel: "Dil",
+      vibrationLabel: "Düymə Titrəməsi",
+      soundLabel: "Düymə Səsi (Baloncuq 🫧)",
+      precisionLabel: "Ondalıq Dəqiqliyi",
+      fullscreenLabel: "Tam Ekran Rejimi",
+      adminPanelBtn: "🛡️ Admin Panel",
+      adminPanelTitle: "🛡️ Admin Panel",
+      broadcastBtn: "📢 Hamıya Mesaj Göndər",
+      resetBtn: "Ayarları və Tarixçəni Sıfırla",
+      accountLabel: "HESAB",
+      adText: "Məlumatlarınızı təhlükəsiz saxlamaq üçün qeydiyyatdan keçin.",
+      registerBtn: "Qeydiyyat",
+      loginBtn: "Daxil ol",
+      logoutBtn: "Çıxış",
+      registerTitle: "Qeydiyyat",
+      loginTitle: "Daxil ol",
+      adminLoginTitle: "🛡️ Admin Girişi",
+      openPanelBtn: "Paneli Aç",
+      usernamePh: "İstifadəçi adı (5-20 simvol)",
+      emailPh: "E-poçt",
+      passwordPh: "Şifrə",
+      hasAccount: "Artıq hesabınız var?",
+      noAccount: "Hesabınız yoxdur?",
+      shortcutsTitle: "Klaviatura Qısayolları",
+      sc1: "0–9 → rəqəm",
+      sc2: "+ − * / → əməliyyat",
+      sc3: "Enter və ya = → bərabərdir",
+      sc4: "Backspace → sil",
+      sc5: "Esc → təmizlə",
+      consoleTitle: "💻 Admin Əmr Konsolu",
+      consoleActive: "Admin Konsolu Aktivdir. /help yazın.",
+      verifyTitle: "Təsdiq Kodu",
+      verifySubmit: "Təsdiqlə",
+      resendLink: "Kodu yenidən göndər"
+    },
+    ru: {
+      drawerTitle: "Настройки",
+      settingsLabel: "НАСТРОЙКИ ПРИЛОЖЕНИЯ",
+      themeLabel: "Тема",
+      regionLabel: "Регион",
+      langLabel: "Язык",
+      vibrationLabel: "Вибрация клавиш",
+      soundLabel: "Звук клавиш (Пузырь 🫧)",
+      precisionLabel: "Точность дробей",
+      fullscreenLabel: "Полноэкранный режим",
+      adminPanelBtn: "🛡️ Панель админа",
+      adminPanelTitle: "🛡️ Панель админа",
+      broadcastBtn: "📢 Рассылка сообщения",
+      resetBtn: "Сбросить настройки",
+      accountLabel: "АККАУНТ",
+      adText: "Зарегистрируйтесь для сохранения ваших настроек.",
+      registerBtn: "Регистрация",
+      loginBtn: "Войти",
+      logoutBtn: "Выйти",
+      registerTitle: "Регистрация",
+      loginTitle: "Вход",
+      adminLoginTitle: "🛡️ Вход администратора",
+      openPanelBtn: "Открыть панель",
+      usernamePh: "Имя пользователя (5-20 симв.)",
+      emailPh: "Эл. почта",
+      passwordPh: "Пароль",
+      hasAccount: "Уже есть аккаунт?",
+      noAccount: "Нет аккаунта?",
+      shortcutsTitle: "Горячие клавиши",
+      sc1: "0–9 → цифра",
+      sc2: "+ − * / → операция",
+      sc3: "Enter или = → равно",
+      sc4: "Backspace → удалить",
+      sc5: "Esc → очистить",
+      consoleTitle: "💻 Консоль команд админа",
+      consoleActive: "Консоль админа активна. Введите /help.",
+      verifyTitle: "Код подтверждения",
+      verifySubmit: "Подтвердить",
+      resendLink: "Отправить код повторно"
+    },
+    ja: {
+      drawerTitle: "設定",
+      settingsLabel: "アプリ設定",
+      themeLabel: "テーマ",
+      regionLabel: "地域 (Region)",
+      langLabel: "言語",
+      vibrationLabel: "キー振動",
+      soundLabel: "キー音 (バブル 🫧)",
+      precisionLabel: "小数精度",
+      fullscreenLabel: "フルスクリーンモード",
+      adminPanelBtn: "🛡️ 管理者パネル",
+      adminPanelTitle: "🛡️ 管理者パネル",
+      broadcastBtn: "📢 全体メッセージ送信",
+      resetBtn: "設定と履歴をリセット",
+      accountLabel: "アカウント",
+      adText: "設定を安全に保存するために登録してください。",
+      registerBtn: "登録",
+      loginBtn: "ログイン",
+      logoutBtn: "ログアウト",
+      registerTitle: "登録",
+      loginTitle: "ログイン",
+      adminLoginTitle: "🛡️ 管理者ログイン",
+      openPanelBtn: "パネルを開く",
+      usernamePh: "ユーザー名 (5〜20文字)",
+      emailPh: "メールアドレス",
+      passwordPh: "パスワード",
+      hasAccount: "すでにアカウントをお持ちですか？",
+      noAccount: "アカウントをお持ちではありませんか？",
+      shortcutsTitle: "キーボードショートカット",
+      sc1: "0–9 → 数字",
+      sc2: "+ − * / → 演算",
+      sc3: "Enter または = → 合計",
+      sc4: "Backspace → 削除",
+      sc5: "Esc → クリア",
+      consoleTitle: "💻 管理者コマンドコンソール",
+      consoleActive: "管理者コンソールが有効です。/help と入力してください。",
+      verifyTitle: "確認コード",
+      verifySubmit: "確認",
+      resendLink: "コードを再送"
+    },
+    ko: {
+      drawerTitle: "설정",
+      settingsLabel: "앱 설정",
+      themeLabel: "테마",
+      regionLabel: "지역 (Region)",
+      langLabel: "언어",
+      vibrationLabel: "키 진동",
+      soundLabel: "키 사운드 (버블 🫧)",
+      precisionLabel: "소수점 정밀도",
+      fullscreenLabel: "전체 화면 모드",
+      adminPanelBtn: "🛡️ 관리자 패널",
+      adminPanelTitle: "🛡️ 관리자 패널",
+      broadcastBtn: "📢 전체 메시지 전송",
+      resetBtn: "설정 및 기록 초기화",
+      accountLabel: "계정",
+      adText: "설정을 안전하게 저장하려면 가입하세요.",
+      registerBtn: "회원가입",
+      loginBtn: "로그인",
+      logoutBtn: "로그아웃",
+      registerTitle: "회원가입",
+      loginTitle: "로그인",
+      adminLoginTitle: "🛡️ 관리자 로그인",
+      openPanelBtn: "패널 열기",
+      usernamePh: "사용자 이름 (5~20자)",
+      emailPh: "이메일",
+      passwordPh: "비밀번호",
+      hasAccount: "이미 계정이 있으신가요?",
+      noAccount: "계정이 없으신가요?",
+      shortcutsTitle: "키보드 단축키",
+      sc1: "0–9 → 숫자",
+      sc2: "+ − * / → 연산",
+      sc3: "Enter 또는 = → 결과",
+      sc4: "Backspace → 삭제",
+      sc5: "Esc → 지우기",
+      consoleTitle: "💻 관리자 명령어 콘솔",
+      consoleActive: "관리자 콘솔 활성화됨. /help를 입력하세요.",
+      verifyTitle: "인증 코드",
+      verifySubmit: "확인",
+      resendLink: "코드 재전송"
+    },
+    zh: {
+      drawerTitle: "设置",
+      settingsLabel: "应用设置",
+      themeLabel: "主题",
+      regionLabel: "地区 (Region)",
+      langLabel: "语言",
+      vibrationLabel: "按键振动",
+      soundLabel: "按键音 (气泡 🫧)",
+      precisionLabel: "小数精度",
+      fullscreenLabel: "全屏模式",
+      adminPanelBtn: "🛡️ 管理员面板",
+      adminPanelTitle: "🛡️ 管理员面板",
+      broadcastBtn: "📢 发送全体公告",
+      resetBtn: "重置设置与历史",
+      accountLabel: "账户",
+      adText: "注册以安全存储您的偏好设置。",
+      registerBtn: "注册",
+      loginBtn: "登录",
+      logoutBtn: "登出",
+      registerTitle: "注册",
+      loginTitle: "登录",
+      adminLoginTitle: "🛡️ 管理员登录",
+      openPanelBtn: "打开面板",
+      usernamePh: "用户名 (5-20个字符)",
+      emailPh: "电子邮箱",
+      passwordPh: "密码",
+      hasAccount: "已有账户？",
+      noAccount: "没有账户？",
+      shortcutsTitle: "键盘快捷键",
+      sc1: "0–9 → 数字",
+      sc2: "+ − * / → 运算",
+      sc3: "Enter 或 = → 等于",
+      sc4: "Backspace → 删除",
+      sc5: "Esc → 清除",
+      consoleTitle: "💻 管理员命令控制台",
+      consoleActive: "管理员控制台已激活。输入 /help 查看命令。",
+      verifyTitle: "验证码",
+      verifySubmit: "验证",
+      resendLink: "重新发送验证码"
+    },
+    ar: {
+      drawerTitle: "الإعدادات",
+      settingsLabel: "إعدادات التطبيق",
+      themeLabel: "السمة",
+      regionLabel: "المنطقة (Region)",
+      langLabel: "اللغة",
+      vibrationLabel: "اهتزاز المفاتيح",
+      soundLabel: "صوت المفاتيح (فقاعة 🫧)",
+      precisionLabel: "دقة الكسور العشرية",
+      fullscreenLabel: "وضع ملء الشاشة",
+      adminPanelBtn: "🛡️ لوحة المشرف",
+      adminPanelTitle: "🛡️ لوحة المشرف",
+      broadcastBtn: "📢 إرسال رسالة للجميع",
+      resetBtn: "إعادة ضبط الإعدادات",
+      accountLabel: "الحساب",
+      adText: "قم بالتسجيل لحفظ تفضيلاتك بشكل آمن.",
+      registerBtn: "إنشاء حساب",
+      loginBtn: "تسجيل الدخول",
+      logoutBtn: "تسجيل الخروج",
+      registerTitle: "إنشاء حساب",
+      loginTitle: "تسجيل الدخول",
+      adminLoginTitle: "🛡️ دخول المشرف",
+      openPanelBtn: "فتح اللوحة",
+      usernamePh: "اسم المستخدم (5-20 حرفاً)",
+      emailPh: "البريد الإلكتروني",
+      passwordPh: "كلمة المرور",
+      hasAccount: "لديك حساب بالفعل؟",
+      noAccount: "ليس لديك حساب؟",
+      shortcutsTitle: "اختصارات لوحة المفاتيح",
+      sc1: "0–9 → رقم",
+      sc2: "+ − * / → عملية",
+      sc3: "Enter أو = → يساوي",
+      sc4: "Backspace → حذف",
+      sc5: "Esc → مسح",
+      consoleTitle: "💻 وحدة تحكم أوامر المشرف",
+      consoleActive: "وحدة تحكم المشرف نشطة. اكتب /help.",
+      verifyTitle: "رمز التحقق",
+      verifySubmit: "تحقق",
+      resendLink: "إعادة إرسال الرمز"
+    },
+    pt: {
+      drawerTitle: "Configurações",
+      settingsLabel: "CONFIGURAÇÕES DO APLICATIVO",
+      themeLabel: "Tema",
+      regionLabel: "Região",
+      langLabel: "Idioma",
+      vibrationLabel: "Vibração das teclas",
+      soundLabel: "Som das teclas (Bolha 🫧)",
+      precisionLabel: "Precisão decimal",
+      fullscreenLabel: "Modo Tela Cheia",
+      adminPanelBtn: "🛡️ Painel do Admin",
+      adminPanelTitle: "🛡️ Painel do Admin",
+      broadcastBtn: "📢 Enviar mensagem geral",
+      resetBtn: "Redefinir configurações",
+      accountLabel: "CONTA",
+      adText: "Registre-se para salvar suas preferências com segurança.",
+      registerBtn: "Cadastrar",
+      loginBtn: "Entrar",
+      logoutBtn: "Sair",
+      registerTitle: "Cadastrar",
+      loginTitle: "Entrar",
+      adminLoginTitle: "🛡️ Login do Admin",
+      openPanelBtn: "Abrir Painel",
+      usernamePh: "Nome de usuário (5-20 car.)",
+      emailPh: "E-mail",
+      passwordPh: "Senha",
+      hasAccount: "Já tem uma conta?",
+      noAccount: "Não tem uma conta?",
+      shortcutsTitle: "Atalhos de teclado",
+      sc1: "0–9 → dígito",
+      sc2: "+ − * / → operação",
+      sc3: "Enter ou = → igual",
+      sc4: "Backspace → apagar",
+      sc5: "Esc → limpar",
+      consoleTitle: "💻 Console de comandos Admin",
+      consoleActive: "Console Admin ativo. Digite /help.",
+      verifyTitle: "Código de verificação",
+      verifySubmit: "Verificar",
+      resendLink: "Reenviar código"
+    },
+    nl: {
+      drawerTitle: "Instellingen",
+      settingsLabel: "APP-INSTELLINGEN",
+      themeLabel: "Thema",
+      regionLabel: "Regio",
+      langLabel: "Taal",
+      vibrationLabel: "Toetsvibratie",
+      soundLabel: "Toetsgeluid (Bubbel 🫧)",
+      precisionLabel: "Decimale precisie",
+      fullscreenLabel: "Volledig Scherm",
+      adminPanelBtn: "🛡️ Beheerderspaneel",
+      adminPanelTitle: "🛡️ Beheerderspaneel",
+      broadcastBtn: "📢 Algemeen bericht verzenden",
+      resetBtn: "Instellingen herstellen",
+      accountLabel: "ACCOUNT",
+      adText: "Registreer om uw voorkeuren veilig op te slaan.",
+      registerBtn: "Registreren",
+      loginBtn: "Inloggen",
+      logoutBtn: "Uitloggen",
+      registerTitle: "Registreren",
+      loginTitle: "Inloggen",
+      adminLoginTitle: "🛡️ Beheerdersinlog",
+      openPanelBtn: "Paneel openen",
+      usernamePh: "Gebruikersnaam (5-20 tekens)",
+      emailPh: "E-mail",
+      passwordPh: "Wachtwoord",
+      hasAccount: "Al een account?",
+      noAccount: "Geen account?",
+      shortcutsTitle: "Toetsenbordsnelkoppelingen",
+      sc1: "0–9 → cijfer",
+      sc2: "+ − * / → bewerking",
+      sc3: "Enter of = → is gelijk aan",
+      sc4: "Backspace → wissen",
+      sc5: "Esc → leegmaken",
+      consoleTitle: "💻 Beheerdersconsole",
+      consoleActive: "Beheerdersconsole actief. Typ /help.",
+      verifyTitle: "Verificatiecode",
+      verifySubmit: "Verifiëren",
+      resendLink: "Code opnieuw verzenden"
+    },
+    pl: {
+      drawerTitle: "Ustawienia",
+      settingsLabel: "USTAWIENIA APLIKACJI",
+      themeLabel: "Motyw",
+      regionLabel: "Region",
+      langLabel: "Język",
+      vibrationLabel: "Wibracje klawiszy",
+      soundLabel: "Dźwięk klawiszy (Bąbelek 🫧)",
+      precisionLabel: "Precyzja dziesiętna",
+      fullscreenLabel: "Tryb Pełnoekranowy",
+      adminPanelBtn: "🛡️ Panel Administratora",
+      adminPanelTitle: "🛡️ Panel Administratora",
+      broadcastBtn: "📢 Wyślij ogłoszenie",
+      resetBtn: "Zresetuj ustawienia",
+      accountLabel: "KONTO",
+      adText: "Zarejestruj się, aby bezpiecznie zapisać swoje preferencje.",
+      registerBtn: "Zarejestruj się",
+      loginBtn: "Zaloguj się",
+      logoutBtn: "Wyloguj",
+      registerTitle: "Zarejestruj się",
+      loginTitle: "Zaloguj się",
+      adminLoginTitle: "🛡️ Logowanie Administratora",
+      openPanelBtn: "Otwórz Panel",
+      usernamePh: "Nazwa użytkownika (5-20 znaków)",
+      emailPh: "E-mail",
+      passwordPh: "Hasło",
+      hasAccount: "Masz już konto?",
+      noAccount: "Nie masz konta?",
+      shortcutsTitle: "Skróty klawiszowe",
+      sc1: "0–9 → cyfra",
+      sc2: "+ − * / → operacja",
+      sc3: "Enter lub = → równa się",
+      sc4: "Backspace → usuń",
+      sc5: "Esc → wyczyść",
+      consoleTitle: "💻 Konsola poleceń Admina",
+      consoleActive: "Konsola Admina aktywna. Wpisz /help.",
+      verifyTitle: "Kod weryfikacyjny",
+      verifySubmit: "Zweryfikuj",
+      resendLink: "Wyślij kod ponownie"
+    },
+    sv: {
+      drawerTitle: "Inställningar",
+      settingsLabel: "APPINSTÄLLNINGAR",
+      themeLabel: "Tema",
+      regionLabel: "Region",
+      langLabel: "Språk",
+      vibrationLabel: "Knappvibration",
+      soundLabel: "Knappljud (Bubbla 🫧)",
+      precisionLabel: "Decimalprecision",
+      fullscreenLabel: "Helskärmsläge",
+      adminPanelBtn: "🛡️ Adminpanel",
+      adminPanelTitle: "🛡️ Adminpanel",
+      broadcastBtn: "📢 Skicka meddelande till alla",
+      resetBtn: "Återställ inställningar",
+      accountLabel: "KONTO",
+      adText: "Registrera dig för att spara dina inställningar säkert.",
+      registerBtn: "Registrera",
+      loginBtn: "Logga in",
+      logoutBtn: "Logga ut",
+      registerTitle: "Registrera",
+      loginTitle: "Logga in",
+      adminLoginTitle: "🛡️ Admininloggning",
+      openPanelBtn: "Öppna panel",
+      usernamePh: "Användarnamn (5-20 tecken)",
+      emailPh: "E-post",
+      passwordPh: "Lösenord",
+      hasAccount: "Har du redan ett konto?",
+      noAccount: "Har du inget konto?",
+      shortcutsTitle: "Kortkommandon",
+      sc1: "0–9 → siffra",
+      sc2: "+ − * / → operation",
+      sc3: "Enter eller = → lika med",
+      sc4: "Backspace → radera",
+      sc5: "Esc → rensa",
+      consoleTitle: "💻 Admin-kommandokonsol",
+      consoleActive: "Adminkonsol aktiv. Skriv /help.",
+      verifyTitle: "Verifieringskod",
+      verifySubmit: "Verifiera",
+      resendLink: "Skicka koden igen"
+    },
+    el: {
+      drawerTitle: "Ρυθμίσεις",
+      settingsLabel: "ΡΥΘΜΙΣΕΙΣ ΕΦΑΡΜΟΓΗΣ",
+      themeLabel: "Θέμα",
+      regionLabel: "Περιοχή (Region)",
+      langLabel: "Γλώσσα",
+      vibrationLabel: "Dόνηση πλήκτρων",
+      soundLabel: "Ήχος πλήκτρων (Φουσκάλα 🫧)",
+      precisionLabel: "Ακρίβεια δεκαδικών",
+      fullscreenLabel: "Λειτουργία Πλήρους Οθόνης",
+      adminPanelBtn: "🛡️ Πίνακας Διαχειριστή",
+      adminPanelTitle: "🛡️ Πίνακας Διαχειριστή",
+      broadcastBtn: "📢 Αποστολή ανακοίνωσης",
+      resetBtn: "Επαναφορά ρυθμίσεων",
+      accountLabel: "ΛΟΓΑΡΙΑΣΜΟΣ",
+      adText: "Εγγραφείτε για να αποθηκεύσετε τις προτιμήσεις σας.",
+      registerBtn: "Εγγραφή",
+      loginBtn: "Σύνδεση",
+      logoutBtn: "Αποσύνδεση",
+      registerTitle: "Εγγραφή",
+      loginTitle: "Σύνδεση",
+      adminLoginTitle: "🛡️ Σύνδεση Διαχειριστή",
+      openPanelBtn: "Άνοιγμα Πίνακα",
+      usernamePh: "Όνομα χρήστη (5-20 χαρακτήρες)",
+      emailPh: "Email",
+      passwordPh: "Κωδικός",
+      hasAccount: "Έχετε ήδη λογαριασμό;",
+      noAccount: "Δεν έχετε λογαριασμό;",
+      shortcutsTitle: "Συντομεύσεις πληκτρολογίου",
+      sc1: "0–9 → ψηφίο",
+      sc2: "+ − * / → πράξη",
+      sc3: "Enter ή ε → ίσον",
+      sc4: "Backspace → διαγραφή",
+      sc5: "Esc → καθαρισμός",
+      consoleTitle: "💻 Κονσόλα εντολών Admin",
+      consoleActive: "Η κονσόλα Admin είναι ενεργή. Πληκτρολογήστε /help.",
+      verifyTitle: "Κωδικός επαλήθευσης",
+      verifySubmit: "Επαλήθευση",
+      resendLink: "Αποστολή κώδικα ξανά"
+    },
+    hi: {
+      drawerTitle: "सेटिंग्स",
+      settingsLabel: "ऐप सेटिंग्स",
+      themeLabel: "थीम",
+      regionLabel: "क्षेत्र (Region)",
+      langLabel: "भाषा",
+      vibrationLabel: "कुंजी कंपन",
+      soundLabel: "कुंजी ध्वनि (बबल 🫧)",
+      precisionLabel: "दशमलव सटीकता",
+      fullscreenLabel: "फुलस्क्रीन मोड",
+      adminPanelBtn: "🛡️ एडمين पैनल",
+      adminPanelTitle: "🛡️ एडمين पैनल",
+      broadcastBtn: "📢 सभी को संदेश भेजें",
+      resetBtn: "सेटिंग्स रीसेट करें",
+      accountLabel: "खाता",
+      adText: "अपनी प्राथमिकताओं को सुरक्षित रूप से सहेजने के लिए साइन अप करें।",
+      registerBtn: "साइन अप",
+      loginBtn: "लॉग in",
+      logoutBtn: "लॉग आउट",
+      registerTitle: "साइन अप",
+      loginTitle: "लॉग इन",
+      adminLoginTitle: "🛡️ एडमिन लॉगिन",
+      openPanelBtn: "पैनल खोलें",
+      usernamePh: "उपयोगकर्ता नाम (5-20 वर्ण)",
+      emailPh: "ईमेल",
+      passwordPh: "पासवर्ड",
+      hasAccount: "क्या आपके पास पहले से खाता है?",
+      noAccount: "खाता नहीं है?",
+      shortcutsTitle: "कीबोर्ड शॉर्टकट",
+      sc1: "0–9 → अंक",
+      sc2: "+ − * / → संक्रिया",
+      sc3: "Enter या = → बराबर",
+      sc4: "Backspace → हटाएं",
+      sc5: "Esc → साफ करें",
+      consoleTitle: "💻 एडमिन कमांड कंसोल",
+      consoleActive: "एडमिन कंसोल सक्रिय है। /help टाइप करें।",
+      verifyTitle: "सत्यापन कोड",
+      verifySubmit: "सत्यापित करें",
+      resendLink: "कोड फिर से भेजें"
+    },
+    id: {
+      drawerTitle: "Pengaturan",
+      settingsLabel: "PENGATURAN APLIKASI",
+      themeLabel: "Tema",
+      regionLabel: "Wilayah (Region)",
+      langLabel: "Bahasa",
+      vibrationLabel: "Getaran Tombol",
+      soundLabel: "Suara Tombol (Gelembung 🫧)",
+      precisionLabel: "Presisi Desimal",
+      fullscreenLabel: "Mode Layar Penuh",
+      adminPanelBtn: "🛡️ Panel Admin",
+      adminPanelTitle: "🛡️ Panel Admin",
+      broadcastBtn: "📢 Kirim Pesan Siaran",
+      resetBtn: "Reset Pengaturan & Riwayat",
+      accountLabel: "AKUN",
+      adText: "Daftar untuk menyimpan preferensi Anda dengan aman.",
+      registerBtn: "Daftar",
+      loginBtn: "Masuk",
+      logoutBtn: "Keluar",
+      registerTitle: "Daftar",
+      loginTitle: "Masuk",
+      adminLoginTitle: "🛡️ Login Admin",
+      openPanelBtn: "Buka Panel",
+      usernamePh: "Nama pengguna (5-20 karakter)",
+      emailPh: "Email",
+      passwordPh: "Kata sandi",
+      hasAccount: "Sudah punya akun?",
+      noAccount: "Belum punya akun?",
+      shortcutsTitle: "Pintasan Keyboard",
+      sc1: "0–9 → digit",
+      sc2: "+ − * / → operasi",
+      sc3: "Enter atau = → sama dengan",
+      sc4: "Backspace → hapus",
+      sc5: "Esc → bersihkan",
+      consoleTitle: "💻 Konsol Perintah Admin",
+      consoleActive: "Konsol Admin Aktif. Ketik /help.",
+      verifyTitle: "Kode Verifikasi",
+      verifySubmit: "Verifikasi",
+      resendLink: "Kirim ulang kode"
+    },
+    vi: {
+      drawerTitle: "Cài đặt",
+      settingsLabel: "CÀI ĐẶT ỨNG DỤNG",
+      themeLabel: "Giao diện",
+      regionLabel: "Khu vực (Region)",
+      langLabel: "Ngôn ngữ",
+      vibrationLabel: "Rung phím",
+      soundLabel: "Âm thanh phím (Bong bóng 🫧)",
+      precisionLabel: "Độ chính xác thập phân",
+      fullscreenLabel: "Chế Độ Toàn Màn Hình",
+      adminPanelBtn: "🛡️ Bảng Quản Trị",
+      adminPanelTitle: "🛡️ Bảng Quản Trị",
+      broadcastBtn: "📢 Gửi thông báo toàn hệ thống",
+      resetBtn: "Đặt lại cài đặt",
+      accountLabel: "TÀI KHOẢN",
+      adText: "Đăng ký để lưu trữ tùy chọn của bạn một cách an toàn.",
+      registerBtn: "Đăng ký",
+      loginBtn: "Đăng nhập",
+      logoutBtn: "Đăng xuất",
+      registerTitle: "Đăng ký",
+      loginTitle: "Đăng nhập",
+      adminLoginTitle: "🛡️ Đăng nhập Quản trị viên",
+      openPanelBtn: "Mở bảng",
+      usernamePh: "Tên người dùng (5-20 ký tự)",
+      emailPh: "Email",
+      passwordPh: "Mật khẩu",
+      hasAccount: "Đã có tài khoản?",
+      noAccount: "Chưa có tài khoản?",
+      shortcutsTitle: "Phím tắt bàn phím",
+      sc1: "0–9 → chữ số",
+      sc2: "+ − * / → phép tính",
+      sc3: "Enter hoặc = → bằng",
+      sc4: "Backspace → xóa",
+      sc5: "Esc → làm sạch",
+      consoleTitle: "💻 Bảng điều khiển lệnh Admin",
+      consoleActive: "Bảng điều khiển Admin hoạt động. Nhập /help.",
+      verifyTitle: "Mã xác minh",
+      verifySubmit: "Xác minh",
+      resendLink: "Gửi lại mã"
+    }
+  };
+
+  function initApp() {
+    const loadingEl = document.getElementById('loadingText');
+    const states = ["Yükleniyor", "Yükleniyor.", "Yükleniyor..", "Yükleniyor..."];
+    let stateIdx = 0;
+    
+    const loadingInterval = setInterval(() => {
+      stateIdx = (stateIdx + 1) % states.length;
+      if (loadingEl) {
+        loadingEl.textContent = states[stateIdx];
+      }
+    }, 400);
+
+    const loader = document.getElementById('pageLoader');
+    setTimeout(() => {
+      clearInterval(loadingInterval);
+      if (loader) {
+        loader.classList.add('fade-out');
+        setTimeout(() => {
+          loader.remove();
+          checkKvkkApproval();
+        }, 500);
+      }
+    }, 10000);
+
+    const users = getUsers();
+    let adminObj = users.find(u => u.email === ADMIN_EMAIL);
+    if (!adminObj) {
+      users.push({
+        username: "Admin",
+        email: ADMIN_EMAIL,
+        password: ADMIN_PASS,
+        messages: []
+      });
+      saveUsers(users);
+    } else {
+      adminObj.password = ADMIN_PASS;
+      saveUsers(users);
+    }
+    loadUserHistory();
+    updateAccountUI();
+    applySettingsUI();
+    render();
+    checkUserMessages();
+  }
+
+  const BACK_TO_SCHOOL_EXPIRY = new Date('2026-09-30T23:59:59');
+
+  function enforceBackToSchoolExpiry() {
+    const expired = new Date() > BACK_TO_SCHOOL_EXPIRY;
+    const row = document.getElementById('backToSchoolRow');
+    if (expired) {
+      if (row) row.remove();
+      if (userSettings.backToSchool) {
+        userSettings.backToSchool = false;
+        localStorage.setItem('calc_settings', JSON.stringify(userSettings));
+      }
+    }
+  }
+
+  function applySettingsUI() {
+    enforceBackToSchoolExpiry();
+    document.documentElement.setAttribute('data-theme', userSettings.theme);
+    document.getElementById('themeSelect').value = userSettings.theme;
+    document.getElementById('regionSelect').value = userSettings.region;
+    document.getElementById('languageSelect').value = userSettings.language;
+    document.getElementById('vibrationToggle').checked = userSettings.vibration;
+    document.getElementById('soundToggle').checked = userSettings.sound;
+    document.getElementById('precisionSelect').value = userSettings.precision;
+    document.getElementById('fullscreenToggle').checked = userSettings.fullscreen;
+    document.getElementById('liquidGlassToggle').checked = userSettings.liquidGlass;
+    document.body.classList.toggle('liquid-glass', userSettings.liquidGlass);
+    const btsToggle = document.getElementById('backToSchoolToggle');
+    if (btsToggle) btsToggle.checked = userSettings.backToSchool;
+    updateFullscreenBtnIcon();
+    renderDrawerTexts();
+    updateSchoolBranding();
+  }
+
+  const SCHOOL_FAVICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231B3A2F'/%3E%3Cpath d='M32 42 C20 42 14 34 14 26 C14 18 19 13 26 13 C29 13 31 15 32 17 C33 15 35 13 38 13 C45 13 50 18 50 26 C50 34 44 42 32 42Z' fill='%23F4C542'/%3E%3Cpath d='M32 17 L32 9' stroke='%232E5C49' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M32 12 Q40 6 42 14 Q36 16 32 12Z' fill='%232E5C49'/%3E%3C/svg%3E";
+  const DEFAULT_FAVICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23101012'/%3E%3Ctext x='32' y='45' font-family='monospace' font-weight='bold' font-size='36' fill='%23F2F2F0' text-anchor='middle'%3EX%3C/text%3E%3C/svg%3E";
+
+  function updateSchoolBranding() {
+    const isSchool = !!userSettings.backToSchool && new Date() <= BACK_TO_SCHOOL_EXPIRY;
+    document.body.classList.toggle('back-to-school', isSchool);
+    const logo = document.getElementById('schoolLogo');
+    const badge = document.getElementById('schoolBadge');
+    const favicon = document.querySelector("link[rel='icon']");
+    if (logo) logo.style.display = isSchool ? 'inline' : 'none';
+    if (badge) badge.style.display = isSchool ? 'inline-block' : 'none';
+    if (favicon) favicon.href = isSchool ? SCHOOL_FAVICON : DEFAULT_FAVICON;
+  }
+
+  function toggleBackToSchool(enable) {
+    updateSetting('backToSchool', enable);
+  }
+
+  function toggleLiquidGlass(enable) {
+    updateSetting('liquidGlass', enable);
+  }
+
+  function updateSetting(key, val) {
+    userSettings[key] = val;
+    localStorage.setItem('calc_settings', JSON.stringify(userSettings));
+    applySettingsUI();
+  }
+
+  function changeThemeFromSelect(val) {
+    updateSetting('theme', val);
+  }
+
+  function changeLanguage(langCode) {
+    updateSetting('language', langCode);
+  }
+
+  function toggleFullscreenSetting(enable) {
+    userSettings.fullscreen = enable;
+    localStorage.setItem('calc_settings', JSON.stringify(userSettings));
+
+    if (enable) {
+      const el = document.documentElement;
+      const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+      if (req) {
+        req.call(el).catch(() => {});
+      }
+    } else {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        const exit = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+        if (exit) exit.call(document).catch(() => {});
+      }
+    }
+    updateFullscreenBtnIcon();
+    const toggleEl = document.getElementById('fullscreenToggle');
+    if (toggleEl) toggleEl.checked = enable;
+  }
+
+  function updateFullscreenBtnIcon() {
+    const btn = document.getElementById('fullscreenBtn');
+    if (!btn) return;
+    const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    btn.textContent = isFs ? '⛶' : '⛶';
+    btn.style.opacity = userSettings.fullscreen ? '1' : '0.6';
+  }
+
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && userSettings.fullscreen) {
+      userSettings.fullscreen = false;
+      localStorage.setItem('calc_settings', JSON.stringify(userSettings));
+      const toggleEl = document.getElementById('fullscreenToggle');
+      if (toggleEl) toggleEl.checked = false;
+    }
+    updateFullscreenBtnIcon();
+  });
+
+  function triggerHaptic() {
+    if (userSettings.vibration && navigator.vibrate) {
+      navigator.vibrate(35);
+    }
+  }
+
+  let audioCtx = null;
+  function getAudioCtx() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    return audioCtx;
+  }
+
+  function playClickSound() {
+    if (!userSettings.sound) return;
+    try {
+      const ctx = getAudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(300, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.04);
+
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.05);
+    } catch(e) {}
+  }
+
+  function handleBtnClick() {
+    triggerHaptic();
+    playClickSound();
+  }
+
+  function resetAllData() {
+    if (confirm("Tüm ayarları ve yerel verileri sıfırlamak istediğinize emin misiniz?")) {
+      localStorage.removeItem('calc_settings');
+      localStorage.removeItem('xcalc_users');
+      localStorage.removeItem('xcalc_currentUser');
+      localStorage.removeItem('xcalc_kvkk_accepted');
+      location.reload();
+    }
+  }
+
+  function checkKvkkApproval() {
+    const approved = localStorage.getItem('xcalc_kvkk_accepted');
+    if (currentUser && approved === 'true') {
+      return;
+    }
+    document.getElementById('kvkkOverlay').classList.add('show');
+  }
+
+  function acceptKvkk() {
+    if (currentUser) {
+      localStorage.setItem('xcalc_kvkk_accepted', 'true');
+    }
+    document.getElementById('kvkkOverlay').classList.remove('show');
+    showPostAcceptSpinner();
+  }
+
+  function showPostAcceptSpinner() {
+    const loader = document.createElement('div');
+    loader.className = 'initial-page-loader';
+    loader.id = 'pageLoaderPostAccept';
+    loader.innerHTML = `
+      <div class="ios-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+    `;
+    document.body.appendChild(loader);
+
+    setTimeout(() => {
+      loader.classList.add('fade-out');
+      setTimeout(() => loader.remove(), 500);
+    }, 5000);
+  }
+
+  function rejectKvkk() {
+    document.getElementById('kvkkOverlay').classList.remove('show');
+    showInfiniteSpinner();
+  }
+
+  function showInfiniteSpinner() {
+    const loader = document.createElement('div');
+    loader.className = 'initial-page-loader';
+    loader.id = 'pageLoaderRefused';
+    loader.innerHTML = `
+      <div class="ios-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+      <div class="loading-text" style="font-size: 13px; text-align: center; line-height: 1.5; color: var(--text);">Kullanım Şartları ve İzinlerimiz Güncelleştirilmesi Kabul Edilmedi.<br>Siteye Erişim Sağlanamıyor...</div>
+    `;
+    document.body.appendChild(loader);
+
+    setTimeout(() => {
+      alert("⚠️ Lütfen siteyi kullanabilmek için güncellenen izinleri ve KVKK metnini onaylayınız!");
+      loader.remove();
+      document.getElementById('kvkkOverlay').classList.add('show');
+    }, 4000);
+  }
+
+  const displayTextEl = document.getElementById('displayText');
+  const prevEl = document.getElementById('prev');
+
+  function render() {
+    let formattedDisplay = display;
+    if (userSettings.precision !== 'auto' && !isNaN(parseFloat(display)) && isFinite(display)) {
+      const prec = parseInt(userSettings.precision);
+      formattedDisplay = parseFloat(display).toFixed(prec);
+    }
+    displayTextEl.textContent = formattedDisplay;
+    prevEl.textContent = historyExprOverride ? historyExprOverride : (operator ? `${prevValue} ${operator}` : "");
+  }
+
+  function inputDigit(d) {
+    historyExprOverride = null;
+    if (waitingForNext) {
+      display = d;
+      waitingForNext = false;
+    } else {
+      display = display === "0" ? d : display + d;
+    }
+    render();
+  }
+
+  function inputDecimal() {
+    historyExprOverride = null;
+    if (waitingForNext) { display = "0."; waitingForNext = false; render(); return; }
+    if (!display.includes(".")) display += ".";
+    render();
+  }
+
+  function clearAll() { display = "0"; prevValue = null; operator = null; waitingForNext = false; historyExprOverride = null; render(); }
+  function toggleSign() { historyExprOverride = null; display = String(parseFloat(display) * -1); render(); }
+  function inputPercent() { historyExprOverride = null; display = String(parseFloat(display) / 100); render(); }
+  function backspace() { historyExprOverride = null; display = display.length > 1 ? display.slice(0, -1) : "0"; render(); }
+
+  function handleOperator(op) {
+    historyExprOverride = null;
+    prevValue = parseFloat(display);
+    operator = op;
+    waitingForNext = true;
+    render();
+  }
+
+  function handleEquals() {
+    if (!operator || prevValue === null) return;
+    const current = parseFloat(display);
+    let result = 0;
+    if (operator === '+') result = prevValue + current;
+    if (operator === '−') result = prevValue - current;
+    if (operator === '×') result = prevValue * current;
+    if (operator === '÷') result = current === 0 ? "Hata" : prevValue / current;
+
+    const exprText = `${prevValue} ${operator} ${current}`;
+
+    display = String(result);
+    operator = null;
+    prevValue = null;
+    waitingForNext = true;
+    render();
+
+    addHistory(exprText, display);
+  }
+
+  function copyResult() {
+    navigator.clipboard.writeText(display);
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = "✓";
+    setTimeout(() => { btn.textContent = "⧉"; }, 900);
+  }
+
+  function toggleInfo() { document.getElementById('infoPanel').classList.toggle('show'); }
+  function toggleDrawer() {
+    closeHistoryDrawer();
+    document.getElementById('drawer').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('show');
+  }
+  function closeDrawer() { document.getElementById('drawer').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+
+  function openHistoryDrawer() {
+    closeDrawer();
+    document.getElementById('historyDrawer').classList.add('open');
+    document.getElementById('historyOverlay').classList.add('show');
+    renderHistory();
+  }
+  function closeHistoryDrawer() {
+    document.getElementById('historyDrawer').classList.remove('open');
+    document.getElementById('historyOverlay').classList.remove('show');
+  }
+
+  // Tüm site dilini güncelleyen fonksiyon
+  function renderDrawerTexts() {
+    const l = userSettings.language || 'tr';
+    const t = translations[l] || translations['tr'];
+
+    document.getElementById('drawerTitle').textContent = t.drawerTitle;
+    document.getElementById('settingsLabel').textContent = t.settingsLabel;
+    document.getElementById('themeLabelText').textContent = t.themeLabel;
+    document.getElementById('regionLabelText').textContent = t.regionLabel;
+    document.getElementById('langLabelText').textContent = t.langLabel;
+    document.getElementById('vibrationLabelText').textContent = t.vibrationLabel;
+    document.getElementById('soundLabelText').textContent = t.soundLabel;
+    document.getElementById('precisionLabelText').textContent = t.precisionLabel;
+    document.getElementById('fullscreenLabelText').textContent = t.fullscreenLabel;
+    document.getElementById('adminPanelBtn').textContent = t.adminPanelBtn;
+    document.getElementById('adminPanelTitleText').textContent = t.adminPanelTitle;
+    document.getElementById('broadcastBtnText').textContent = t.broadcastBtn;
+    document.getElementById('resetBtnText').textContent = t.resetBtn;
+    document.getElementById('accountLabel').textContent = t.accountLabel;
+    document.getElementById('adText').textContent = t.adText;
+    document.getElementById('registerBtn').textContent = t.registerBtn;
+    document.getElementById('loginBtn').textContent = t.loginBtn;
+    document.getElementById('logoutBtn').textContent = t.logoutBtn;
+    document.getElementById('regModalTitle').textContent = t.registerTitle;
+    document.getElementById('regSubmitBtn').textContent = t.registerBtn;
+    document.getElementById('loginModalTitle').textContent = t.loginTitle;
+    document.getElementById('loginSubmitBtn').textContent = t.loginBtn;
+    document.getElementById('adminLoginTitleText').textContent = t.adminLoginTitle;
+    document.getElementById('openPanelBtnText').textContent = t.openPanelBtn;
+    document.getElementById('hasAccountText').textContent = t.hasAccount;
+    document.getElementById('switchToLoginBtn').textContent = t.loginBtn;
+    document.getElementById('noAccountText').textContent = t.noAccount;
+    document.getElementById('switchToRegisterBtn').textContent = t.registerBtn;
+    document.getElementById('regUsername').placeholder = t.usernamePh;
+    document.getElementById('regEmail').placeholder = t.emailPh;
+    document.getElementById('regPassword').placeholder = t.passwordPh;
+    document.getElementById('loginEmail').placeholder = t.emailPh;
+    document.getElementById('loginPassword').placeholder = t.passwordPh;
+    document.getElementById('shortcutsTitle').textContent = t.shortcutsTitle;
+    document.getElementById('sc1').textContent = t.sc1;
+    document.getElementById('sc2').textContent = t.sc2;
+    document.getElementById('sc3').textContent = t.sc3;
+    document.getElementById('sc4').textContent = t.sc4;
+    document.getElementById('sc5').textContent = t.sc5;
+    document.getElementById('consoleTitleText').textContent = t.consoleTitle;
+    document.getElementById('consoleActiveText').textContent = t.consoleActive;
+    document.getElementById('verifyTitleText').textContent = t.verifyTitle;
+    document.getElementById('verifySubmitBtn').textContent = t.verifySubmit;
+    document.getElementById('resendLink').textContent = t.resendLink;
+  }
+
+  function getUsers() {
+    try { return JSON.parse(localStorage.getItem('xcalc_users') || '[]'); } catch (e) { return []; }
+  }
+  function saveUsers(users) {
+    localStorage.setItem('xcalc_users', JSON.stringify(users));
+  }
+
+  function openRegister() {
+    authOverlay.classList.add('show');
+    registerModal.classList.add('show');
+    loginModal.classList.remove('show');
+    adminAuthModal.classList.remove('show');
+    verifyModal.classList.remove('show');
+    document.getElementById('regError').textContent = '';
+  }
+
+  function openLogin() {
+    authOverlay.classList.add('show');
+    loginModal.classList.add('show');
+    registerModal.classList.remove('show');
+    adminAuthModal.classList.remove('show');
+    verifyModal.classList.remove('show');
+    document.getElementById('loginError').textContent = '';
+  }
+
+  function openAdminAuthModal() {
+    authOverlay.classList.add('show');
+    adminAuthModal.classList.add('show');
+    registerModal.classList.remove('show');
+    loginModal.classList.remove('show');
+    verifyModal.classList.remove('show');
+    document.getElementById('adminAuthPassword').value = '';
+    document.getElementById('adminAuthError').textContent = '';
+  }
+
+  function submitAdminAuth() {
+    const pass = document.getElementById('adminAuthPassword').value;
+    const errEl = document.getElementById('adminAuthError');
+
+    if (pass === ADMIN_PASS) {
+      closeAuth();
+      
+      const appleLoader = document.getElementById('appleLoaderModal');
+      document.getElementById('authOverlay').classList.add('show');
+      appleLoader.classList.add('show');
+
+      setTimeout(() => {
+        appleLoader.classList.remove('show');
+        document.getElementById('authOverlay').classList.remove('show');
+        document.getElementById('adminPanel').style.display = 'block';
+        document.getElementById('adminConsole').classList.add('show');
+        renderAdminUserList();
+      }, 3000);
+      
+    } else {
+      errEl.textContent = "Hatalı admin şifresi!";
+    }
+  }
+
+  function closeAdminPanel() {
+    document.getElementById('adminPanel').style.display = 'none';
+  }
+
+  function closeConsole() {
+    document.getElementById('adminConsole').classList.remove('show');
+  }
+
+  function logToConsole(text, type = '') {
+    const logs = document.getElementById('consoleLogs');
+    const div = document.createElement('div');
+    div.className = `console-line ${type}`;
+    div.textContent = text;
+    logs.appendChild(div);
+    logs.scrollTop = logs.scrollHeight;
+  }
+
+  function handleConsoleCmd(e) {
+    if (e.key !== 'Enter') return;
+    const input = document.getElementById('consoleCmd');
+    const rawVal = input.value.trim();
+    if (!rawVal) return;
+
+    logToConsole(`> ${rawVal}`);
+    input.value = '';
+
+    if (rawVal.startsWith('/gb ') || rawVal.startsWith('/duyuru ')) {
+      const msg = rawVal.replace(/^\/(gb|duyuru)\s+/, '');
+      if (msg) {
+        broadcastMessageFromConsole(msg);
+      } else {
+        logToConsole("Kullanım: /gb <mesaj>", "err");
+      }
+    } else if (rawVal.startsWith('/sil ')) {
+      const email = rawVal.replace(/^\/sil\s+/, '').trim();
+      deleteUserFromConsole(email);
+    } else if (rawVal.startsWith('/msg ')) {
+      const parts = rawVal.split(' ');
+      if (parts.length >= 3) {
+        const email = parts[1];
+        const msg = parts.slice(2).join(' ');
+        sendMessageFromConsole(email, msg);
+      } else {
+        logToConsole("Kullanım: /msg <eposta> <mesaj>", "err");
+      }
+    } else if (rawVal === '/clear') {
+      document.getElementById('consoleLogs').innerHTML = '';
+    } else if (rawVal === '/help') {
+      logToConsole("Kullanılabilir Komutlar:", "sys");
+      logToConsole("/gb <mesaj> - Tüm kullanıcılara duyuru gönderir.");
+      logToConsole("/msg <eposta> <mesaj> - Kullanıcıya özel mesaj atar.");
+      logToConsole("/sil <eposta> - Kullanıcıyı siler.");
+      logToConsole("/clear - Konsolu temizler.");
+    } else {
+      logToConsole(`Bilinmeyen komut: ${rawVal}. Yardım için /help yazın.`, "err");
+    }
+  }
+
+  function broadcastMessageFromConsole(msg) {
+    const users = getUsers();
+    users.forEach(u => {
+      if (u.email !== ADMIN_EMAIL) {
+        u.messages = u.messages || [];
+        u.messages.push({ from: "Admin (Duyuru)", text: msg, date: new Date().toLocaleTimeString() });
+      }
+    });
+    saveUsers(users);
+    logToConsole(`[BAŞARILI] Duyuru gönderildi: "${msg}"`, "sys");
+  }
+
+  function sendMessageFromConsole(email, msg) {
+    const users = getUsers();
+    const u = users.find(item => item.email === email);
+    if (u) {
+      u.messages = u.messages || [];
+      u.messages.push({ from: "Admin", text: msg, date: new Date().toLocaleTimeString() });
+      saveUsers(users);
+      logToConsole(`[BAŞARILI] Mesaj ${email} adresine gönderildi.`, "sys");
+    } else {
+      logToConsole(`[HATA] ${email} adresli kullanıcı bulunamadı!`, "err");
+    }
+  }
+
+  function deleteUserFromConsole(email) {
+    let users = getUsers();
+    const exists = users.some(u => u.email === email);
+    if (!exists) {
+      logToConsole(`[HATA] ${email} adresli kullanıcı bulunamadı!`, "err");
+      return;
+    }
+
+    users = users.filter(u => u.email !== email);
+    saveUsers(users);
+
+    if (currentUser && currentUser.email === email) {
+      logout();
+    }
+
+    renderAdminUserList();
+    logToConsole(`[BAŞARILI] ${email} kullanıcısı silindi.`, "sys");
+  }
+
+  function switchToLogin() { openLogin(); }
+  function switchToRegister() { openRegister(); }
+
+  function closeAuth() {
+    authOverlay.classList.remove('show');
+    registerModal.classList.remove('show');
+    loginModal.classList.remove('show');
+    adminAuthModal.classList.remove('show');
+    verifyModal.classList.remove('show');
+    document.getElementById('appleLoaderModal').classList.remove('show');
+    pendingRegistration = null;
+  }
+
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.(com|net|org|edu|gov|io|co|info|biz|[a-zA-Z]{2,})$/i.test(email);
+  }
+
+  function isValidUsername(username) {
+    if (username.length < 5 || username.length > 20) return false;
+    if (username.charAt(0) !== '@') return false;
+    return true;
+  }
+
+  function ensureAtPrefix(id) {
+    const el = document.getElementById(id);
+    if (el.value && el.value.charAt(0) !== '@') {
+      const pos = el.selectionStart;
+      el.value = '@' + el.value;
+      el.setSelectionRange(pos + 1, pos + 1);
+    }
+  }
+
+  function isValidPassword(password) {
+    if (password.length < 12) return false;
+    if (!/[A-Z]/.test(password)) return false;
+    if (!/[a-z]/.test(password)) return false;
+    if (!/[0-9]/.test(password)) return false;
+    if (!/[.:!@#$%^&*_\-+=?]/.test(password)) return false;
+    return true;
+  }
+
+  function submitRegister() {
+    const l = userSettings.language || 'tr';
+    const t = translations[l] || translations['tr'];
+    const username = document.getElementById('regUsername').value.trim();
+    const email = document.getElementById('regEmail').value.trim().toLowerCase();
+    const password = document.getElementById('regPassword').value;
+    const errEl = document.getElementById('regError');
+
+    if (!username || !email || !password) { errEl.textContent = "Lütfen tüm alanları doldurun."; return; }
+    if (!isValidUsername(username)) { errEl.textContent = "Kullanıcı adı @ ile başlamalı ve 5-20 karakter olmalıdır."; return; }
+    if (!isValidEmail(email)) { errEl.textContent = "Geçerli bir e-posta giriniz."; return; }
+    if (!isValidPassword(password)) { errEl.textContent = "Şifre en az 12 karakter, 1 büyük, 1 küçük harf, 1 rakam ve 1 özel karakter (.:!@# gibi) içermelidir."; return; }
+
+    const users = getUsers();
+    if (users.some((u) => u.email === email)) { errEl.textContent = "Bu e-posta zaten kayıtlı."; return; }
+
+    const code = generateCode();
+    pendingRegistration = { username, email, password, code };
+
+    registerModal.classList.remove('show');
+    authOverlay.classList.add('show');
+
+    const appleLoader = document.getElementById('appleLoaderModal');
+    appleLoader.classList.add('show');
+
+    setTimeout(() => {
+      appleLoader.classList.remove('show');
+      openVerify();
+    }, 10000);
+  }
+
+  function generateCode() {
+    return String(Math.floor(100000 + Math.random() * 900000));
+  }
+
+  function openVerify() {
+    if (!pendingRegistration) return;
+    const l = userSettings.language || 'tr';
+    const t = translations[l] || translations['tr'];
+    document.getElementById('verifyTitleText').textContent = t.verifyTitle;
+    document.getElementById('demoCode').textContent = pendingRegistration.code;
+    document.getElementById('verifySubmitBtn').textContent = t.verifySubmit;
+    document.getElementById('resendLink').textContent = t.resendLink;
+    document.getElementById('verifyCode').value = '';
+    document.getElementById('verifyError').textContent = '';
+    authOverlay.classList.add('show');
+    verifyModal.classList.add('show');
+    registerModal.classList.remove('show');
+    loginModal.classList.remove('show');
+    adminAuthModal.classList.remove('show');
+  }
+
+  function resendCode() {
+    if (!pendingRegistration) return;
+    pendingRegistration.code = generateCode();
+    document.getElementById('demoCode').textContent = pendingRegistration.code;
+  }
+
+  function submitVerify() {
+    if (!pendingRegistration) return;
+    const entered = document.getElementById('verifyCode').value.trim();
+    if (entered !== pendingRegistration.code) {
+      document.getElementById('verifyError').textContent = "Hatalı kod!";
+      return;
+    }
+    const users = getUsers();
+    users.push({
+      username: pendingRegistration.username,
+      email: pendingRegistration.email,
+      password: pendingRegistration.password,
+      messages: []
+    });
+    saveUsers(users);
+    loginAs(pendingRegistration.email, pendingRegistration.username);
+    pendingRegistration = null;
+    closeAuth();
+  }
+
+  function submitLogin() {
+    const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+    const password = document.getElementById('loginPassword').value;
+    const errEl = document.getElementById('loginError');
+
+    if (!email || !password) { errEl.textContent = "Lütfen alanları doldurun."; return; }
+
+    const users = getUsers();
+    const found = users.find(u => u.email === email && u.password === password);
+
+    if (found) {
+      loginAs(found.email, found.username);
+      closeAuth();
+    } else {
+      errEl.textContent = "Hatalı e-posta veya şifre.";
+    }
+  }
+
+  function openEditUsername() {
+    const input = document.getElementById('editUsernameInput');
+    input.value = currentUser.username;
+    document.getElementById('editNameError').textContent = '';
+    document.getElementById('editNameRow').style.display = 'block';
+  }
+
+  function closeEditUsername() {
+    document.getElementById('editNameRow').style.display = 'none';
+  }
+
+  function saveUsername() {
+    const newName = document.getElementById('editUsernameInput').value.trim();
+    const errEl = document.getElementById('editNameError');
+    if (!isValidUsername(newName)) {
+      errEl.textContent = 'Kullanıcı adı @ ile başlamalı ve 5-20 karakter olmalıdır.';
+      return;
+    }
+    const users = getUsers();
+    const idx = users.findIndex(u => u.email === currentUser.email);
+    if (idx === -1) return;
+
+    const user = users[idx];
+    const now = Date.now();
+    const oneDay = 24 * 60 * 60 * 1000;
+    const recentChanges = (user.usernameChanges || []).filter(ts => now - ts < oneDay);
+
+    if (recentChanges.length >= 2) {
+      const nextAvailable = new Date(recentChanges[0] + oneDay);
+      const hrs = Math.ceil((nextAvailable.getTime() - now) / (60 * 60 * 1000));
+      errEl.textContent = `Günde en fazla 2 kez değiştirebilirsin. Yaklaşık ${hrs} saat sonra tekrar dene.`;
+      return;
+    }
+
+    recentChanges.push(now);
+    user.username = newName;
+    user.usernameChanges = recentChanges;
+    saveUsers(users);
+
+    currentUser.username = newName;
+    localStorage.setItem('xcalc_currentUser', JSON.stringify(currentUser));
+    document.getElementById('profileName').textContent = newName;
+    closeEditUsername();
+  }
+
+  function loginAs(email, username) {
+    currentUser = { email, username };
+    localStorage.setItem('xcalc_currentUser', JSON.stringify(currentUser));
+    loadUserHistory();
+    updateAccountUI();
+    checkUserMessages();
+  }
+
+  function deleteAccount() {
+    if (!currentUser) return;
+    if (!confirm("Hesabını kalıcı olarak silmek istediğine emin misin? Bu işlem geri alınamaz.")) return;
+
+    const email = currentUser.email;
+    const users = getUsers().filter(u => u.email !== email);
+    saveUsers(users);
+    localStorage.removeItem('xcalc_history_' + email);
+    localStorage.removeItem('xcalc_currentUser');
+
+    currentUser = null;
+    loadUserHistory();
+    closeEditUsername();
+    updateAccountUI();
+  }
+
+  function logout() {
+    currentUser = null;
+    localStorage.removeItem('xcalc_currentUser');
+    closeEditUsername();
+    updateAccountUI();
+    location.reload();
+  }
+
+  function updateAccountUI() {
+    const loggedOutDiv = document.getElementById('accountLoggedOut');
+    const loggedInDiv = document.getElementById('accountLoggedIn');
+
+    if (currentUser) {
+      loggedOutDiv.style.display = 'none';
+      loggedInDiv.style.display = 'block';
+      document.getElementById('profileName').textContent = currentUser.username;
+      document.getElementById('profileEmail').textContent = currentUser.email;
+      renderHistory();
+    } else {
+      loggedOutDiv.style.display = 'block';
+      loggedInDiv.style.display = 'none';
+    }
+  }
+
+  function getHistoryKey() {
+    return currentUser ? ('xcalc_history_' + currentUser.email) : 'xcalc_history_guest';
+  }
+
+  function loadUserHistory() {
+    try {
+      history = JSON.parse(localStorage.getItem(getHistoryKey()) || '[]');
+    } catch (e) {
+      history = [];
+    }
+    renderHistory();
+  }
+
+  function saveUserHistory() {
+    localStorage.setItem(getHistoryKey(), JSON.stringify(history));
+  }
+
+  function addHistory(expr, result) {
+    history.unshift({ id: Date.now() + Math.random().toString(36).slice(2), expr, result });
+    if (history.length > 50) history.pop();
+    renderHistory();
+    saveUserHistory();
+  }
+
+  function clearHistory() {
+    history = [];
+    renderHistory();
+    saveUserHistory();
+  }
+
+  function deleteHistoryItem(id) {
+    history = history.filter(h => h.id !== id);
+    renderHistory();
+    saveUserHistory();
+  }
+
+  function openHistoryItem(id) {
+    const item = history.find(h => h.id === id);
+    if (!item) return;
+    display = String(item.result);
+    operator = null;
+    prevValue = null;
+    waitingForNext = true;
+    historyExprOverride = `${item.expr} =`;
+    render();
+    closeHistoryDrawer();
+  }
+
+  function renderHistory() {
+    const el = document.getElementById('historyList');
+    if (!el) return;
+    if (history.length === 0) {
+      el.innerHTML = '<div class="historyempty">Henüz kayıt yok</div>';
+      return;
+    }
+    el.innerHTML = history
+      .map(h => `<div class="historyitem" onclick="openHistoryItem('${h.id}')">
+        <div class="historyitemtext">
+          <div class="historyexpr">${h.expr}</div>
+          <div class="historyresult">${h.result}</div>
+        </div>
+        <button class="historydelete" onclick="event.stopPropagation(); deleteHistoryItem('${h.id}')">×</button>
+      </div>`)
+      .join('');
+  }
+
+  function renderAdminUserList() {
+    const listEl = document.getElementById('adminUserList');
+    const users = getUsers().filter(u => u.email !== ADMIN_EMAIL);
+
+    if (users.length === 0) {
+      listEl.innerHTML = '<div style="color:var(--text); font-size:11px;">Kayıtlı kullanıcı yok.</div>';
+      return;
+    }
+
+    listEl.innerHTML = users.map(u => `
+      <div class="useritem">
+        <div class="userinfo"><strong>${u.username}</strong></div>
+        <div class="userinfo" style="color:var(--text);">${u.email}</div>
+        <div class="actionbtns">
+          <button class="msgbtn" onclick="sendMessageToUser('${u.email}')">Mesaj Gönder</button>
+          <button class="delbtn" onclick="deleteUser('${u.email}')">Sil</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function sendMessageToUser(email) {
+    const msg = prompt("Kullanıcıya gönderilecek mesajı yazın:");
+    if (!msg) return;
+
+    const users = getUsers();
+    const u = users.find(item => item.email === email);
+    if (u) {
+      u.messages = u.messages || [];
+      u.messages.push({ from: "Admin", text: msg, date: new Date().toLocaleTimeString() });
+      saveUsers(users);
+      alert("Mesaj başarıyla gönderildi!");
+    }
+  }
+
+  function sendBroadcastMessage() {
+    const msg = prompt("Tüm kullanıcılara gönderilecek genel mesajı yazın:");
+    if (!msg) return;
+
+    const users = getUsers();
+    users.forEach(u => {
+      if (u.email !== ADMIN_EMAIL) {
+        u.messages = u.messages || [];
+        u.messages.push({ from: "Admin (Duyuru)", text: msg, date: new Date().toLocaleTimeString() });
+      }
+    });
+    saveUsers(users);
+    alert("Duyuru tüm kullanıcılara iletildi!");
+  }
+
+  function deleteUser(email) {
+    if (!confirm(`${email} hesabını silmek istediğinize emin misiniz?`)) return;
+
+    let users = getUsers();
+    users = users.filter(u => u.email !== email);
+    saveUsers(users);
+
+    if (currentUser && currentUser.email === email) {
+      logout();
+    }
+
+    renderAdminUserList();
+  }
+
+  function checkUserMessages() {
+    if (!currentUser) return;
+    const users = getUsers();
+    const u = users.find(item => item.email === currentUser.email);
+
+    if (u && u.messages && u.messages.length > 0) {
+      const msg = u.messages.shift();
+      alert(`📩 ${msg.from} Mesajı (${msg.date}):\n\n${msg.text}`);
+      saveUsers(users);
+    }
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (document.querySelector('.authmodal.show') || document.activeElement === document.getElementById('consoleCmd') || document.getElementById('kvkkOverlay').classList.contains('show')) return;
+    
+    if (e.key >= '0' && e.key <= '9') { inputDigit(e.key); handleBtnClick(); }
+    if (e.key === '.') { inputDecimal(); handleBtnClick(); }
+    if (e.key === '+') { handleOperator('+'); handleBtnClick(); }
+    if (e.key === '-') { handleOperator('−'); handleBtnClick(); }
+    if (e.key === '*') { handleOperator('×'); handleBtnClick(); }
+    if (e.key === '/') { e.preventDefault(); handleOperator('÷'); handleBtnClick(); }
+    if (e.key === 'Enter' || e.key === '=') { handleEquals(); handleBtnClick(); }
+    if (e.key === 'Backspace') { backspace(); handleBtnClick(); }
+    if (e.key === 'Escape') { clearAll(); handleBtnClick(); }
+  });
+
+  window.onload = initApp;
+
+  (function() {
+    let tiltTimeout = null;
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+    function handlePointerMove(e) {
+      if (!document.body.classList.contains('liquid-glass')) return;
+      const calcEl = document.querySelector('.calc');
+      if (!calcEl) return;
+      const rect = calcEl.getBoundingClientRect();
+      const px = clamp(((e.clientX - rect.left) / rect.width) * 100, -20, 120);
+      const py = clamp(((e.clientY - rect.top) / rect.height) * 100, -20, 120);
+      calcEl.style.setProperty('--mx', px + '%');
+      calcEl.style.setProperty('--my', py + '%');
+
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = clamp((e.clientX - cx) / (rect.width * 1.4), -1, 1);
+      const dy = clamp((e.clientY - cy) / (rect.height * 1.4), -1, 1);
+      const maxTilt = 7;
+      calcEl.style.transform = `perspective(800px) rotateX(${(-dy * maxTilt).toFixed(2)}deg) rotateY(${(dx * maxTilt).toFixed(2)}deg)`;
+      calcEl.classList.add('tilting');
+      clearTimeout(tiltTimeout);
+      tiltTimeout = setTimeout(() => {
+        calcEl.classList.remove('tilting');
+        calcEl.style.transform = '';
+      }, 1400);
+    }
+
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('pointerdown', handlePointerMove, { passive: true });
+  })();
+
+  (function() {
+    const KNOB_TRAVEL = 18;
+    let activeToggle = null;
+    let startX = 0;
+    let startKnobX = 0;
+    let dragged = false;
+    let justDragged = null;
+
+    function getKnobX(el) {
+      return el.checked ? KNOB_TRAVEL : 0;
+    }
+
+    function onPointerDown(e) {
+      const el = e.target.closest('.setting-row input[type="checkbox"]');
+      if (!el) return;
+      activeToggle = el;
+      dragged = false;
+      startX = e.clientX;
+      startKnobX = getKnobX(el);
+      el.classList.add('dragging');
+      el.style.setProperty('--knob-x', startKnobX + 'px');
+      window.addEventListener('pointermove', onDragMove);
+      window.addEventListener('pointerup', onDragEnd);
+    }
+
+    function onDragMove(e) {
+      if (!activeToggle) return;
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 3) dragged = true;
+      const knobX = Math.max(0, Math.min(KNOB_TRAVEL, startKnobX + dx));
+      activeToggle.style.setProperty('--knob-x', knobX + 'px');
+      activeToggle.classList.toggle('drag-past-half', knobX > KNOB_TRAVEL / 2);
+    }
+
+    function onDragEnd(e) {
+      if (!activeToggle) return;
+      const el = activeToggle;
+      const dx = e.clientX - startX;
+      const knobX = Math.max(0, Math.min(KNOB_TRAVEL, startKnobX + dx));
+      const shouldCheck = knobX > KNOB_TRAVEL / 2;
+
+      el.classList.remove('dragging', 'drag-past-half');
+      el.style.removeProperty('--knob-x');
+
+      if (dragged) {
+        if (el.checked !== shouldCheck) {
+          el.checked = shouldCheck;
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        justDragged = el;
+      }
+
+      activeToggle = null;
+      window.removeEventListener('pointermove', onDragMove);
+      window.removeEventListener('pointerup', onDragEnd);
+    }
+
+    function onClickCapture(e) {
+      const el = e.target.closest('.setting-row input[type="checkbox"]');
+      if (el && justDragged === el) {
+        e.preventDefault();
+        e.stopPropagation();
+        justDragged = null;
+      }
+    }
+
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('click', onClickCapture, true);
+  })();
+</script>
+</body>
+</html>
